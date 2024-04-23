@@ -26,7 +26,7 @@
   "icon": "images/logo-transparent.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/your-repo.git"
+    "url": "https://github.com/2514millerj/vscode-meerkatio.git"
   },
   "main": "./extension.js",
   "contributes": {

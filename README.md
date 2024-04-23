@@ -11,10 +11,6 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 - Email
 
 ## Quickstart
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Setup
 No setup is required to use the Ping command with this extension, but in order to access Slack, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
 
 MeerkatIO notifications will automatically (after a window reload) execute for all tasks and debug executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current task!
