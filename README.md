@@ -28,6 +28,10 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
+### 1.1.1
+
+Change `sound` to `ping`
+
 ### 1.1.0
 
 Add MeerkatIO Pro communication channels including Slack, SMS, and Email

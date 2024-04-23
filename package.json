@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "engines": {
     "vscode": "^1.63.2"
   },
@@ -42,7 +42,7 @@
         "meerkat.meerkatNotification": {
           "type": "string",
           "description": "Configure the notification channel from the MeerkatIO Platform. Choose from ping, slack, sms, or email",
-          "default": "sound",
+          "default": "ping",
           "scope": "resource",
           "enum": [
             "ping",
