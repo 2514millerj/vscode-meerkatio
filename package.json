@@ -1,0 +1,93 @@
+{
+  "name": "meerkatio",
+  "publisher": "MeerkatIO",
+  "displayName": "MeerkatIO",
+  "description": "Personal notification tool for multi-tasking software developers",
+  "version": "1.1.0",
+  "engines": {
+    "vscode": "^1.63.2"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "alert",
+    "notification",
+    "task",
+    "debug",
+    "remote work",
+    "productivity",
+    "slack"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "icon": "images/logo-transparent.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/your-repo.git"
+  },
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "MeerkatIO Notification Options",
+      "properties": {
+        "meerkat.token": {
+          "type": "string",
+          "description": "MeerkatIO Platform token for enabling Slack, SMS, and Email notifications",
+          "scope": "resource"
+        },
+        "meerkat.meerkatNotification": {
+          "type": "string",
+          "description": "Configure the notification channel from the MeerkatIO Platform. Choose from ping, slack, sms, or email",
+          "default": "sound",
+          "scope": "resource",
+          "enum": [
+            "ping",
+            "slack",
+            "sms",
+            "email"
+          ],
+          "enumDescriptions": [
+            "(default) Sound notification",
+            "Slack Notification",
+            "SMS Notification",
+            "Email Notification"
+          ]
+        },
+        "meerkat.enabled": {
+          "type": "boolean",
+          "description": "Toggle MeerkatIO notifications on and off",
+          "default": true,
+          "scope": "resource"
+        }
+      }
+    },
+    "resources": [
+      {
+        "pattern": "audio/*.mp3",
+        "destination": "/audio"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "yarn run lint",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "play-sound": "^1.1.6"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.63.2",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
