@@ -35,9 +35,9 @@ function sendMeerkatNotification(method, message) {
 	});
 }
 
-function handleMeerkatNotification(meerkatioNotification, message) {
+function handleMeerkatNotification(meerkatioNotification, message, extensionPath) {
 	if (meerkatioNotification === 'ping') {
-		player.play(context.extensionPath + '/audio/default_ping.mp3', function(err){
+		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) throw err
 			});
 	}
@@ -76,7 +76,7 @@ function activate(context) {
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 		const message = `Run and Debug Task Completed: ${e.name}`;
-		handleMeerkatNotification(meerkatioNotification, message);
+		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
 	})
 
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
@@ -85,7 +85,7 @@ function activate(context) {
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 		const message = `Task completed: ${e.execution.task.name}`;
-		handleMeerkatNotification(meerkatioNotification, message);
+		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
 	});
 
 	context.subscriptions.push(debugTaskListener);

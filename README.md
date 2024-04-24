@@ -28,7 +28,11 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
-### 1.1.1
+### 1.1.3
+
+Fixed bug with `ping` command
+
+### 1.1.2
 
 Change `sound` to `ping`
 

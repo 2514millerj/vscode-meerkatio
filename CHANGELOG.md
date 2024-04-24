@@ -2,8 +2,11 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+### [1.1.3]
 
-### [1.1.1]
+- Fixed bug with `ping` command
+
+### [1.1.2]
 
 - Change `sound` to `ping`
 
