@@ -1,6 +1,6 @@
 # MeerkatIO Extension for Visual Studio Code
 
-[MeerkatIO](https://meerkatio.com) is a personal notification tool for software developers with long-running scripts. The MeerkatIO Platform will help you save time and help you to stop watching your code run.
+[MeerkatIO](https://meerkatio.com) is a personal notification tool for software developers with long-running scripts. Set up this extension to alert you after running a custom task or a test suite. The MeerkatIO Platform will help you save time and help you to stop watching your code run.
 
 ## Features
 
