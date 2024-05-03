@@ -3,7 +3,8 @@
 const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
-//const notifier = require('node-notifier');
+const notifier = require('node-notifier');
+const nc = new notifier.NotificationCenter();
 
 function sendMeerkatNotification(method, message) {
     const url = 'https://meerkatio.com/api/notification/send';
@@ -40,17 +41,24 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) throw err
 			});
+		vscode.window.showInformationMessage("Ping Notification: " + message);
+	}
+	else if (meerkatioNotification === 'system') {
+		nc.notify({
+			title: 'MeerkatIO Alert',
+			message: message,
+			icon: extensionPath + "/images/logo-transparent.png",
+			timeout: 30
+		  });
+		  vscode.window.showInformationMessage("System Notification: " + message);
 	}
 	else if (meerkatioNotification === 'slack') {
-		console.log("Slack Alert");
 		sendMeerkatNotification('slack', message);
 	}
 	else if (meerkatioNotification === 'sms') {
-		console.log("SMS Alert");
 		sendMeerkatNotification('sms', message);
 	}
 	else if (meerkatioNotification === 'email') {
-		console.log("Email Alert");
 		sendMeerkatNotification('email', message);
 	}
 }
@@ -75,7 +83,7 @@ function activate(context) {
 			return;
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
-		const message = `Run and Debug Task Completed: ${e.name}`;
+		const message = `Run (${e.type}) Completed: ${e.name}`;
 		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
 	})
 
@@ -84,7 +92,7 @@ function activate(context) {
 			return;
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
-		const message = `Task completed: ${e.execution.task.name}`;
+		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
 	});
 
