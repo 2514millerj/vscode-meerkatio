@@ -55,7 +55,7 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
-### 1.3.0
+### 1.3.1
 
 Added Jupyter Notebook extension integration. Watches cell execution and triggers alerts on long-running cells.
 

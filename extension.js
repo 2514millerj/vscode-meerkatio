@@ -87,7 +87,6 @@ async function handleNotebookKernel(api, uri, context) {
 	}
 
 	context.subscriptions.push(kernel.onDidChangeStatus((e) => {
-		vscode.window.showInformationMessage(e);
 		if (e === "busy") {
 			timestamp = new Date();
 		} else if (e === "idle" && timestamp !== null) {
