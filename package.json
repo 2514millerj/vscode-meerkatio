@@ -3,12 +3,11 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "engines": {
     "vscode": "^1.30.0"
   },
   "categories": [
-    "Debuggers",
     "Other"
   ],
   "keywords": [
@@ -22,7 +21,9 @@
     "sms",
     "email",
     "system tray",
-    "push notification"
+    "push notification",
+    "jupyter",
+    "notebook"
   ],
   "activationEvents": [
     "*"
@@ -68,6 +69,12 @@
           "description": "Toggle MeerkatIO notifications on and off",
           "default": true,
           "scope": "resource"
+        },
+        "meerkat.triggerMinDurationSeconds": {
+          "type": "integer",
+          "description": "The minimum duration in seconds code must run to cause an alert to be triggered. This avoids noisy alerts on short tasks.",
+          "default": 10,
+          "scope": "resource"
         }
       }
     },
@@ -88,6 +95,7 @@
     "test": "vscode-test"
   },
   "dependencies": {
+    "@vscode/jupyter-extension": "^1.1.1",
     "axios": "^1.6.8",
     "node-notifier": "^10.0.1",
     "play-sound": "^1.1.6"

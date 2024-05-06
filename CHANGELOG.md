@@ -2,7 +2,12 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
-### 1.2.0
+### [1.3.0]
+
+- Added Jupyter Notebook extension integration. Watches cell execution and triggers alerts on long-running cells.
+- Added the `triggerMinDurationSeconds` setting to allow more flexibility with when notifications are triggered to prevent noise.
+
+### [1.2.0]
 
 - Added the `system` command
 

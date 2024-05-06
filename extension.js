@@ -4,7 +4,14 @@ const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
+
 const nc = new notifier.NotificationCenter();
+
+var timestamp = null;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function sendMeerkatNotification(method, message) {
     const url = 'https://meerkatio.com/api/notification/send';
@@ -36,12 +43,17 @@ function sendMeerkatNotification(method, message) {
 	});
 }
 
-function handleMeerkatNotification(meerkatioNotification, message, extensionPath) {
+function handleMeerkatNotification(meerkatioNotification, message, extensionPath, time_diff) {
+	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 10);
+	if (time_diff < minTriggerSeconds * 1000) {
+		return;
+	}
+	
 	if (meerkatioNotification === 'ping') {
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) throw err
 			});
-		vscode.window.showInformationMessage("Ping Notification: " + message);
+		vscode.window.showInformationMessage(`MeerkatIO Ping Notification (${time_diff} ms): ` + message);
 	}
 	else if (meerkatioNotification === 'system') {
 		nc.notify({
@@ -50,7 +62,7 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 			icon: extensionPath + "/images/logo-transparent.png",
 			timeout: 30
 		  });
-		  vscode.window.showInformationMessage("System Notification: " + message);
+		  vscode.window.showInformationMessage(`MeerkatIO System Notification (${time_diff} ms): ` + message);
 	}
 	else if (meerkatioNotification === 'slack') {
 		sendMeerkatNotification('slack', message);
@@ -63,6 +75,47 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 	}
 }
 
+async function handleNotebookKernel(api, uri, context) {
+	let kernelFound = false;
+	let kernel = undefined;
+	while(!kernelFound) {
+		kernel = await api.kernels.getKernel(uri);
+		if (kernel !== undefined) {
+			kernelFound = true;
+		}
+		await sleep(1000);
+	}
+
+	context.subscriptions.push(kernel.onDidChangeStatus((e) => {
+		vscode.window.showInformationMessage(e);
+		if (e === "busy") {
+			timestamp = new Date();
+		} else if (e === "idle" && timestamp !== null) {
+			const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
+			const message = `Jupyter Notebook Cell Completed`;
+			const time_diff = new Date() - timestamp;
+			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+		}
+	}));
+}
+
+async function notebookWatcher(context) {
+	const jupyterExt = vscode.extensions.getExtension('ms-toolsai.jupyter');
+	if (jupyterExt) {
+		const api = await jupyterExt.activate();
+		
+		let existingDocs = [];
+		while(true) {
+			for (const document of vscode.workspace.notebookDocuments) {
+				if (!existingDocs.includes(document.uri)) {
+					handleNotebookKernel(api, document.uri, context);
+					existingDocs.push(document.uri);
+				}
+			}
+			await sleep(1000);
+		}	
+	}
+}
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -70,22 +123,30 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
+async function activate(context) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 		vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!');
 
-	//const debugTaskListener = vscode.debug.onDidEndTask((e) => handleNotification(e, context));
+	const debugStartTaskListener = vscode.debug.onDidStartDebugSession((e) => {
+		timestamp = new Date();
+	});
+
 	const debugTaskListener = vscode.debug.onDidTerminateDebugSession((e) => {
 		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 			return;
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 		const message = `Run (${e.type}) Completed: ${e.name}`;
-		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
-	})
+		const time_diff = new Date() - timestamp;
+		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+	});
+
+	const taskStartTaskListener = vscode.tasks.onDidStartTask((e) => {
+		timestamp = new Date();
+	});
 
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
 		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
@@ -93,10 +154,16 @@ function activate(context) {
 
 		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
-		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath);
+		const time_diff = new Date() - timestamp;
+		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
 	});
 
+	//start async Jupyter notebook watcher for when a user opens new notebooks
+	notebookWatcher(context);
+
+	context.subscriptions.push(debugStartTaskListener);
 	context.subscriptions.push(debugTaskListener);
+	context.subscriptions.push(taskStartTaskListener);
 	context.subscriptions.push(taskListener);
 }
 
