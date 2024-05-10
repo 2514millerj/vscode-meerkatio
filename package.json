@@ -3,12 +3,14 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "engines": {
     "vscode": "^1.30.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Data Science",
+    "Debuggers"
   ],
   "keywords": [
     "alert",
@@ -33,7 +35,7 @@
     "type": "git",
     "url": "https://github.com/2514millerj/vscode-meerkatio.git"
   },
-  "main": "./extension.js",
+  "main": "./src/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -73,11 +75,30 @@
         "meerkat.triggerMinDurationSeconds": {
           "type": "integer",
           "description": "The minimum duration in seconds code must run to cause an alert to be triggered. This avoids noisy alerts on short tasks.",
-          "default": 10,
+          "default": 30,
           "scope": "resource"
         }
       }
     },
+    "viewsContainers": {
+			"activitybar": [
+				{
+					"id": "meerkat-sidebar-view",
+					"title": "MeerkatIO",
+					"icon": "images/logo-transparent.png"
+				}
+			]
+		},
+		"views": {
+			"meerkat-sidebar-view": [
+				{
+					"type": "webview",
+					"id": "meerkat-sidebar",
+					"name": "Home",
+					"icon": "images/logo-transparent.png"
+				}
+			]
+		},
     "resources": [
       {
         "pattern": "audio/*.mp3",
@@ -86,6 +107,10 @@
       {
         "pattern": "images/*.png",
         "destination": "/images"
+      },
+      {
+        "pattern": "src/*",
+        "destination": "/src"
       }
     ]
   },

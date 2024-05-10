@@ -4,6 +4,7 @@ const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
+const SideBarProvider = require('./SideBarProvider');
 
 const nc = new notifier.NotificationCenter();
 
@@ -44,7 +45,7 @@ function sendMeerkatNotification(method, message) {
 }
 
 function handleMeerkatNotification(meerkatioNotification, message, extensionPath, time_diff) {
-	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 10);
+	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 30);
 	if (time_diff < minTriggerSeconds * 1000) {
 		return;
 	}
@@ -116,18 +117,17 @@ async function notebookWatcher(context) {
 	}
 }
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-
 /**
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
-		vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!');
+	const sideBarProvider = new SideBarProvider(context.extensionUri);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			"meerkat-sidebar",
+			sideBarProvider
+		)
+	);
 
 	const debugStartTaskListener = vscode.debug.onDidStartDebugSession((e) => {
 		timestamp = new Date();
@@ -137,10 +137,12 @@ async function activate(context) {
 		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 			return;
 
-		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
-		const message = `Run (${e.type}) Completed: ${e.name}`;
-		const time_diff = new Date() - timestamp;
-		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+		if (e.parentSession === undefined) {
+			const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
+			const message = `Run (${e.type}) Completed: ${e.name}`;
+			const time_diff = new Date() - timestamp;
+			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+		}
 	});
 
 	const taskStartTaskListener = vscode.tasks.onDidStartTask((e) => {
@@ -164,6 +166,11 @@ async function activate(context) {
 	context.subscriptions.push(debugTaskListener);
 	context.subscriptions.push(taskStartTaskListener);
 	context.subscriptions.push(taskListener);
+
+	// This line of code will only be executed once when your extension is activated
+	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
+		vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!');
+
 }
 
 // This method is called when your extension is deactivated

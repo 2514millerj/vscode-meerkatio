@@ -1,23 +1,14 @@
 # MeerkatIO Extension for Visual Studio Code
 
-[MeerkatIO](https://meerkatio.com) is the personal notification tool for software developers that allows you to use the notification channel that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day.
+[MeerkatIO](https://meerkatio.com) is the personal notification tool for software developers that allows you to use the notification channel that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips. 
 
-MeerkatIO has Jupyter extension integration! Without any additional configuration, alerting is enabled on your Jupyter Notebooks out of the box. Just run your cell(s) like normal and MeerkatIO will keep an eye out and alert you when your code completes.
+## Available Integrations
 
-The flexibility of this extension allows you to alert yourself after running a custom task or a test suite in the IDE, integrating with all of the built in tools already at your fingertips. 
+- Jupyter Extension support out of the box. Just run your cell(s) like normal and MeerkatIO will keep an eye out and alert you when your code completes.
+- VS Code Run and Debug monitoring. Alert yourself after long-running processes complete from VS Code's built in Run and Debug Tool.
+- VS Code Task monitoring. Monitor long running tasks defined in `.vscode/launch.json` without any extra configuration.
 
-The MeerkatIO Platform will help you save time and help you to stop watching your code run!
-
-## Use Cases
-
-- Ping yourself when a task defined in `.vscode/launch.json` completes
-- Send your phone an SMS text message when your long running Jupyter Notebook cell completes
-- Generate a system tray notification when your test suite completes while you have a different window open
-- Slack yourself an update on your build pipeline while you are taking your dog for a walk so you know when to head back
-
-Tell us how you use MeerkatIO in the review section!
-
-## Notification Channels
+## Available Notification Channels
 
 The MeerkatIO VS Code Extension supports the following notification channels:
 - Ping
@@ -26,27 +17,35 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 - SMS
 - Email
 
+## Use Cases
+
+- Ping yourself when a task defined in `.vscode/launch.json` completes
+- Send your phone an SMS text message when your long running Jupyter Notebook cell completes
+- Generate a system tray notification when your test suite completes while you have a different window open
+- Slack yourself an update on your build pipeline while you are taking your dog for a walk so you know when to head back
+
 ## Quickstart
 No setup is required to use the Ping or System commands with this extension, but in order to access Slack, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
 
-MeerkatIO notifications will automatically (after a window reload) execute for all tasks and debug executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current task!
+MeerkatIO notifications will automatically (after a window reload) execute for all task, debug, and Jupyter cell executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current workflow!
 
 ## Extension Settings
 After creating your account, set the following Extension Settings to unlock the full MeerkatIO Platform command set:
 
-* `meerkatio.token`: Your MeerkatIO account token which can be found at https://meerkatio.com/account
-* `meerkatio.meerkatNotification`: the notification channel you would like to be alerted with. Available notification options:
+* `meerkat.token`: Your MeerkatIO account token which can be found at https://meerkatio.com/account
+* `meerkat.meerkatNotification`: the notification channel you would like to be alerted with. Available notification options:
     * ping
     * system
     * slack
     * email
     * sms
-* `meerkatio.enabled`: Toggle MeerkatIO notifications on and off
-* `triggerMinDurationSeconds`: The minimum duration in seconds code must run to cause an alert to be triggered. This avoids noisy alerts on short tasks.
+* `meerkat.enabled`: Toggle MeerkatIO notifications on and off
+* `meerkat.triggerMinDurationSeconds`: The minimum duration in seconds code must run to cause an alert to be triggered. This avoids noisy alerts on short tasks.
 
 ## Tips For Success
 
 - Be sure to configure the `triggerMinDurationSeconds` to match your workflow. Noisy alerts get ignored, so customize this setting to improve your personal workflow.
+- Use the MeerkatIO sidebar to easily toggle notifications on and off as you need them
 
 ### System Notifications
 
@@ -54,6 +53,12 @@ After creating your account, set the following Extension Settings to unlock the 
 - On Linux, make sure you have `notify-osd` or `libnotify-bin` installed. (Installed by default on Ubuntu)
 
 ## Release Notes
+
+### 1.4.0
+
+Added MeerkatIO side panel with Quick Actions and Account Management. Allows users to easily toggle notifications on and off and provides useful resources.
+
+Fixed bug where notifications were firing for every process of a Run and Debug execution. Now only fires for the parent process.
 
 ### 1.3.1
 
@@ -72,10 +77,6 @@ Fixed bug with `ping` notification channel
 ### 1.1.2
 
 Change `sound` to `ping`
-
-### 1.1.0
-
-Add MeerkatIO Pro communication channels including Slack, SMS, and Email
 
 
 **Thank you for your support!**
