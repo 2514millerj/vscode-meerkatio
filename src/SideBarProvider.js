@@ -52,8 +52,8 @@ class SideBarProvider {
         let token = vscode.workspace.getConfiguration('meerkat').get('token', null);
         if (!token) {
             return `
-                <a href="https://meerkatio.com/register" style="text-decoration: none;"><button style="color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 80%;">Start Pro Free Trial</button></a>
-                <p><a href="https://meerkatio.com/login">Or sign in</a> if you already have a MeerkatIO Pro account</p>
+                <a href="https://meerkatio.com/register" style="text-decoration: none;"><button style="color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 80%;">Start Free Trial</button></a>
+                <p><a href="https://meerkatio.com/login">Or sign in</a> and add your token to the workspace if you already have a MeerkatIO Pro account</p>
                 `
         } else {
             return `

@@ -54,6 +54,12 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
+### 1.4.1
+
+Fix bug with notification being triggered on Jupyter kernel restart.
+
+Improve notification messaging formatting.
+
 ### 1.4.0
 
 Added MeerkatIO side panel with Quick Actions and Account Management. Allows users to easily toggle notifications on and off and provides useful resources.
@@ -73,10 +79,6 @@ Added the `system` notification channel
 ### 1.1.3
 
 Fixed bug with `ping` notification channel
-
-### 1.1.2
-
-Change `sound` to `ping`
 
 
 **Thank you for your support!**

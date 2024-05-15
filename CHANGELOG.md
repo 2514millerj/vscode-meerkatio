@@ -2,6 +2,11 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.4.1]
+
+- Fix bug with notification being triggered on Jupyter kernel restart.
+- Improve notification messaging formatting.
+
 ## [1.4.0]
 
 - Added MeerkatIO side panel with Quick Actions and Account Management. Allows users to easily toggle notifications on and off and provides useful resources.

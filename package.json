@@ -3,14 +3,15 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.63.0"
   },
   "categories": [
-    "Other",
     "Data Science",
-    "Debuggers"
+    "Debuggers",
+    "Machine Learning",
+    "Notebooks"
   ],
   "keywords": [
     "alert",
@@ -25,12 +26,16 @@
     "system tray",
     "push notification",
     "jupyter",
-    "notebook"
+    "notebooks"
   ],
   "activationEvents": [
     "*"
   ],
   "icon": "images/logo-transparent.png",
+  "galleryBanner": {
+    "color": "#1e76c9",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/2514millerj/vscode-meerkatio.git"

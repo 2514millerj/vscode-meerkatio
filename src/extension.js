@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
@@ -7,11 +5,30 @@ const notifier = require('node-notifier');
 const SideBarProvider = require('./SideBarProvider');
 
 const nc = new notifier.NotificationCenter();
-
 var timestamp = null;
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function sendMeerkatLocal(method) {
+	const url = 'https://meerkatio.com/api/notification/local';
+
+	const data = {
+        uid: vscode.env.machineId,
+		method
+    };
+
+    axios.post(url, data, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+
+	})
+	.catch(error => {
+		
+	});
 }
 
 function sendMeerkatNotification(method, message) {
@@ -19,7 +36,8 @@ function sendMeerkatNotification(method, message) {
 
 	const token = vscode.workspace.getConfiguration('meerkat').get('token');
 	if (!token) {
-		vscode.window.showErrorMessage("No MeerkatIO token found. Check configuration and try again.");
+		vscode.window.showErrorMessage("MeerkatIO: No token found. Check configuration and try again.");
+		return;
 	}
 
     const data = {
@@ -34,9 +52,9 @@ function sendMeerkatNotification(method, message) {
         }
     }).then(response => {
 		if (response.status === 200)
-			vscode.window.showInformationMessage(message);
+			vscode.window.showInformationMessage("MeerkatIO: " + message);
 		else
-			vscode.window.showErrorMessage("MeerkatIO failed to send notification. Please check your credentials and valid configuration options.");
+			vscode.window.showErrorMessage("MeerkatIO: failed to send notification. Please check your credentials and valid configuration options.");
 	})
 	.catch(error => {
 		console.log(error);
@@ -54,7 +72,9 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) throw err
 			});
-		vscode.window.showInformationMessage(`MeerkatIO Ping Notification (${time_diff} ms): ` + message);
+		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${time_diff} ms): ` + message);
+	
+		sendMeerkatLocal('ping');
 	}
 	else if (meerkatioNotification === 'system') {
 		nc.notify({
@@ -62,8 +82,10 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 			message: message,
 			icon: extensionPath + "/images/logo-transparent.png",
 			timeout: 30
-		  });
-		  vscode.window.showInformationMessage(`MeerkatIO System Notification (${time_diff} ms): ` + message);
+		});
+		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${time_diff} ms): ` + message);
+	
+		sendMeerkatLocal('system');
 	}
 	else if (meerkatioNotification === 'slack') {
 		sendMeerkatNotification('slack', message);
@@ -95,6 +117,7 @@ async function handleNotebookKernel(api, uri, context) {
 			const message = `Jupyter Notebook Cell Completed`;
 			const time_diff = new Date() - timestamp;
 			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+			timestamp = null;
 		}
 	}));
 }
@@ -142,6 +165,7 @@ async function activate(context) {
 			const message = `Run (${e.type}) Completed: ${e.name}`;
 			const time_diff = new Date() - timestamp;
 			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+			timestamp = null;
 		}
 	});
 
@@ -157,6 +181,7 @@ async function activate(context) {
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		const time_diff = new Date() - timestamp;
 		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+		timestamp = null;
 	});
 
 	//start async Jupyter notebook watcher for when a user opens new notebooks
