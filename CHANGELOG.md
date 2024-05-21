@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.5.0]
+
+- Released terminal notifier! Monitors your Visual Studio Code terminal processes across any operating system.
+
 ## [1.4.1]
 
 - Fix bug with notification being triggered on Jupyter kernel restart.

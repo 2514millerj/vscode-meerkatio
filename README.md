@@ -1,10 +1,11 @@
 # MeerkatIO Extension for Visual Studio Code
 
-[MeerkatIO](https://meerkatio.com) is the personal notification tool for software developers that allows you to use the notification channel that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips. 
+[MeerkatIO](https://meerkatio.com) is your personal notification tool that uses the notification channel that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips.
 
 ## Available Integrations
 
 - Jupyter Extension support out of the box. Just run your cell(s) like normal and MeerkatIO will keep an eye out and alert you when your code completes.
+- Terminal command monitoring for Mac, Windows, and Linux! MeerkatIO keeps track of all running terminal processes inside of VS Code and alerts you when a process completes according to your workspace settings.
 - VS Code Run and Debug monitoring. Alert yourself after long-running processes complete from VS Code's built in Run and Debug Tool.
 - VS Code Task monitoring. Monitor long running tasks defined in `.vscode/launch.json` without any extra configuration.
 
@@ -54,6 +55,10 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
+### 1.5.0
+
+Released terminal notifier! Monitors your Visual Studio Code terminal processes across any operating system.
+
 ### 1.4.1
 
 Fix bug with notification being triggered on Jupyter kernel restart.
@@ -75,10 +80,6 @@ Added the `triggerMinDurationSeconds` setting to allow more flexibility with whe
 ### 1.2.0
 
 Added the `system` notification channel
-
-### 1.1.3
-
-Fixed bug with `ping` notification channel
 
 
 **Thank you for your support!**

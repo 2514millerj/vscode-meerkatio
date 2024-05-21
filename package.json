@@ -3,13 +3,13 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "engines": {
     "vscode": "^1.63.0"
   },
   "categories": [
     "Data Science",
-    "Debuggers",
+    "Other",
     "Machine Learning",
     "Notebooks"
   ],
@@ -26,7 +26,9 @@
     "system tray",
     "push notification",
     "jupyter",
-    "notebooks"
+    "notebooks",
+    "terminal",
+    "command prompt"
   ],
   "activationEvents": [
     "*"
@@ -128,7 +130,8 @@
     "@vscode/jupyter-extension": "^1.1.1",
     "axios": "^1.6.8",
     "node-notifier": "^10.0.1",
-    "play-sound": "^1.1.6"
+    "play-sound": "^1.1.6",
+    "ps-list": "^7.2.0"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",

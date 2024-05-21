@@ -2,10 +2,14 @@ const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
+const psList = require('ps-list');
 const SideBarProvider = require('./SideBarProvider');
 
+// Global Variables
+var extensionPath = "";
 const nc = new notifier.NotificationCenter();
 var timestamp = null;
+var activePIDs = [];
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -62,7 +66,8 @@ function sendMeerkatNotification(method, message) {
 	});
 }
 
-function handleMeerkatNotification(meerkatioNotification, message, extensionPath, time_diff) {
+function handleMeerkatNotification(message, time_diff) {
+	const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 30);
 	if (time_diff < minTriggerSeconds * 1000) {
 		return;
@@ -98,6 +103,10 @@ function handleMeerkatNotification(meerkatioNotification, message, extensionPath
 	}
 }
 
+/*
+ * Jupyter Notebook Watcher
+ */
+
 async function handleNotebookKernel(api, uri, context) {
 	let kernelFound = false;
 	let kernel = undefined;
@@ -113,10 +122,9 @@ async function handleNotebookKernel(api, uri, context) {
 		if (e === "busy") {
 			timestamp = new Date();
 		} else if (e === "idle" && timestamp !== null) {
-			const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 			const message = `Jupyter Notebook Cell Completed`;
 			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+			handleMeerkatNotification(message, time_diff);
 			timestamp = null;
 		}
 	}));
@@ -140,10 +148,59 @@ async function notebookWatcher(context) {
 	}
 }
 
+/*
+ * Terminal Watcher
+ */
+
+async function terminalHandler(pid) {
+	let childPIDs = new Map();
+	while (activePIDs.includes(pid)) {
+		//get child PIDs
+		//for each new child PID, monitor until PID no longer exists, then trigger notification
+		const allTasks = await psList();
+		const childTasks = allTasks.filter((x) => x.ppid === pid);
+
+		const PIDList = [];
+		for (const task of childTasks) {
+			if (!childPIDs.has(task.pid)) {
+				childPIDs.set(task.pid, {timestamp: new Date(), command: task.cmd});
+			}
+			PIDList.push(task.pid);
+		}
+		
+		// ended tasks
+		for(const childPID of Array.from(childPIDs.keys())) {
+			if (!PIDList.includes(childPID)) {
+				const message = `Terminal Process Completed: ${childPIDs.get(childPID).command}`;
+				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
+				handleMeerkatNotification(message, time_diff);
+				childPIDs.delete(childPID);
+			}
+		}
+
+		await sleep(1000);
+	}
+}
+
+async function terminalWatcher(terminal) {
+	if (terminal !== undefined) {
+		let pid = await terminal.processId;
+		if(!activePIDs.includes(pid)) {
+			activePIDs.push(pid);
+			terminalHandler(pid);
+		}
+	} else {
+		// no active terminal defined, remove all active PIDs
+		activePIDs = [];
+	}
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
+	extensionPath = context.extensionPath
+
 	const sideBarProvider = new SideBarProvider(context.extensionUri);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
@@ -161,10 +218,9 @@ async function activate(context) {
 			return;
 
 		if (e.parentSession === undefined) {
-			const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 			const message = `Run (${e.type}) Completed: ${e.name}`;
 			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+			handleMeerkatNotification(message, time_diff);
 			timestamp = null;
 		}
 	});
@@ -177,20 +233,23 @@ async function activate(context) {
 		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 			return;
 
-		const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		const time_diff = new Date() - timestamp;
-		handleMeerkatNotification(meerkatioNotification, message, context.extensionPath, time_diff);
+		handleMeerkatNotification(message, time_diff);
 		timestamp = null;
 	});
 
 	//start async Jupyter notebook watcher for when a user opens new notebooks
 	notebookWatcher(context);
 
+	//start async terminal watcher
+	const terminalListener = vscode.window.onDidChangeActiveTerminal(terminalWatcher);
+
 	context.subscriptions.push(debugStartTaskListener);
 	context.subscriptions.push(debugTaskListener);
 	context.subscriptions.push(taskStartTaskListener);
 	context.subscriptions.push(taskListener);
+	context.subscriptions.push(terminalListener);
 
 	// This line of code will only be executed once when your extension is activated
 	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
