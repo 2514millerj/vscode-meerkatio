@@ -55,6 +55,10 @@ After creating your account, set the following Extension Settings to unlock the 
 
 ## Release Notes
 
+### 1.5.1
+
+Fix bug with enable/disable notifications on Jupyter Cells and Terminal Processes
+
 ### 1.5.0
 
 Released terminal notifier! Monitors your Visual Studio Code terminal processes across any operating system.
@@ -76,10 +80,6 @@ Fixed bug where notifications were firing for every process of a Run and Debug e
 Added Jupyter Notebook extension integration. Watches cell execution and triggers alerts on long-running cells.
 
 Added the `triggerMinDurationSeconds` setting to allow more flexibility with when notifications are triggered to prevent noise.
-
-### 1.2.0
-
-Added the `system` notification channel
 
 
 **Thank you for your support!**

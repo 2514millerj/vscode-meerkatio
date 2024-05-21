@@ -67,6 +67,9 @@ function sendMeerkatNotification(method, message) {
 }
 
 function handleMeerkatNotification(message, time_diff) {
+	if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
+		return;
+
 	const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 30);
 	if (time_diff < minTriggerSeconds * 1000) {
@@ -214,9 +217,6 @@ async function activate(context) {
 	});
 
 	const debugTaskListener = vscode.debug.onDidTerminateDebugSession((e) => {
-		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
-			return;
-
 		if (e.parentSession === undefined) {
 			const message = `Run (${e.type}) Completed: ${e.name}`;
 			const time_diff = new Date() - timestamp;
@@ -230,9 +230,6 @@ async function activate(context) {
 	});
 
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
-		if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
-			return;
-
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		const time_diff = new Date() - timestamp;
 		handleMeerkatNotification(message, time_diff);
