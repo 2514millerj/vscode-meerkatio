@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.5.2]
+
+- Implement the VS Code telemetry best practices and improve documentation
+
 ## [1.5.1]
 
 - Fix bug with enable/disable notifications on Jupyter Cells and Terminal Processes

@@ -15,12 +15,17 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function sendMeerkatLocal(method) {
+function sendMeerkatLocal(method, time_diff, trigger) {
+	if (!vscode.env.isTelemetryEnabled) {
+		return;
+	}
 	const url = 'https://meerkatio.com/api/notification/local';
 
 	const data = {
         uid: vscode.env.machineId,
-		method
+		method,
+		duration_ms: time_diff,
+		trigger
     };
 
     axios.post(url, data, {
@@ -66,7 +71,7 @@ function sendMeerkatNotification(method, message) {
 	});
 }
 
-function handleMeerkatNotification(message, time_diff) {
+function handleMeerkatNotification(message, time_diff, trigger) {
 	if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 		return;
 
@@ -82,7 +87,7 @@ function handleMeerkatNotification(message, time_diff) {
 			});
 		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${time_diff} ms): ` + message);
 	
-		sendMeerkatLocal('ping');
+		sendMeerkatLocal('ping', time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'system') {
 		nc.notify({
@@ -93,7 +98,7 @@ function handleMeerkatNotification(message, time_diff) {
 		});
 		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${time_diff} ms): ` + message);
 	
-		sendMeerkatLocal('system');
+		sendMeerkatLocal('system', time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'slack') {
 		sendMeerkatNotification('slack', message);
@@ -127,7 +132,7 @@ async function handleNotebookKernel(api, uri, context) {
 		} else if (e === "idle" && timestamp !== null) {
 			const message = `Jupyter Notebook Cell Completed`;
 			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(message, time_diff);
+			handleMeerkatNotification(message, time_diff, "jupyter");
 			timestamp = null;
 		}
 	}));
@@ -176,7 +181,7 @@ async function terminalHandler(pid) {
 			if (!PIDList.includes(childPID)) {
 				const message = `Terminal Process Completed: ${childPIDs.get(childPID).command}`;
 				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
-				handleMeerkatNotification(message, time_diff);
+				handleMeerkatNotification(message, time_diff, "terminal");
 				childPIDs.delete(childPID);
 			}
 		}
@@ -220,7 +225,7 @@ async function activate(context) {
 		if (e.parentSession === undefined) {
 			const message = `Run (${e.type}) Completed: ${e.name}`;
 			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(message, time_diff);
+			handleMeerkatNotification(message, time_diff, "debug");
 			timestamp = null;
 		}
 	});
@@ -232,7 +237,7 @@ async function activate(context) {
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		const time_diff = new Date() - timestamp;
-		handleMeerkatNotification(message, time_diff);
+		handleMeerkatNotification(message, time_diff, "task");
 		timestamp = null;
 	});
 
