@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "engines": {
     "vscode": "^1.63.0"
   },
