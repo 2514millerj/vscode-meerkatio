@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "engines": {
     "vscode": "^1.63.0"
   },
@@ -29,7 +29,7 @@
     "system tray",
     "push notification",
     "jupyter",
-    "notebooks",
+    "notebook",
     "terminal",
     "command prompt"
   ],

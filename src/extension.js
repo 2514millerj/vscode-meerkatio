@@ -119,9 +119,15 @@ async function handleNotebookKernel(api, uri, context) {
 	let kernelFound = false;
 	let kernel = undefined;
 	while(!kernelFound) {
-		kernel = await api.kernels.getKernel(uri);
-		if (kernel !== undefined) {
-			kernelFound = true;
+		try {
+			if (api.kernels !== undefined) {
+				kernel = await api.kernels.getKernel(uri);
+				if (kernel !== undefined) {
+					kernelFound = true;
+				}
+			}
+		} catch(e) {
+			console.log(e);
 		}
 		await sleep(1000);
 	}
