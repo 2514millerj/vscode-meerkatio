@@ -72,6 +72,7 @@ function sendMeerkatNotification(method, message) {
 }
 
 function handleMeerkatNotification(message, time_diff, trigger) {
+	console.log("MeerkatIO Notification Triggered");
 	if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
 		return;
 
@@ -131,6 +132,7 @@ async function handleNotebookKernel(api, uri, context) {
 		}
 		await sleep(1000);
 	}
+	console.log(`New Jupyter Kernel found: ${uri}`);
 
 	context.subscriptions.push(kernel.onDidChangeStatus((e) => {
 		if (e === "busy") {
@@ -153,6 +155,7 @@ async function notebookWatcher(context) {
 		while(true) {
 			for (const document of vscode.workspace.notebookDocuments) {
 				if (!existingDocs.includes(document.uri)) {
+					console.log(`New Jupyter Notebook Detected: ${document.uri}`)
 					handleNotebookKernel(api, document.uri, context);
 					existingDocs.push(document.uri);
 				}
@@ -251,6 +254,7 @@ async function activate(context) {
 	notebookWatcher(context);
 
 	//start async terminal watcher
+	terminalWatcher(vscode.window.activeTerminal());
 	const terminalListener = vscode.window.onDidChangeActiveTerminal(terminalWatcher);
 
 	context.subscriptions.push(debugStartTaskListener);
