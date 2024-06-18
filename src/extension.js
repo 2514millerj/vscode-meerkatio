@@ -254,7 +254,7 @@ async function activate(context) {
 	notebookWatcher(context);
 
 	//start async terminal watcher
-	terminalWatcher(vscode.window.activeTerminal());
+	terminalWatcher(vscode.window.activeTerminal);
 	const terminalListener = vscode.window.onDidChangeActiveTerminal(terminalWatcher);
 
 	context.subscriptions.push(debugStartTaskListener);
