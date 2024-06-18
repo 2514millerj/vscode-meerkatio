@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.5.5]
+
+-Improve terminal watcher to account for the currently active terminal on extension activation
+
 ## [1.5.4]
 
 - Bug fix for Jupyter Notebook notification handler

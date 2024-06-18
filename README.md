@@ -75,6 +75,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.5.5
+
+Improve terminal watcher to account for the currently active terminal on extension activation
+
 ### 1.5.4
 
 Bug fix for Jupyter Notebook notification handler
