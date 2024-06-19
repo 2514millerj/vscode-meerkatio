@@ -1,9 +1,12 @@
+// Imports
 const vscode = require('vscode');
 const axios = require('axios');
 var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
 const psList = require('ps-list');
 const SideBarProvider = require('./SideBarProvider');
+const checkSurveyTrigger = require('./surveyPrompt');
+const logNotificationHistory = require('./notificationHistory');
 
 // Global Variables
 var extensionPath = "";
@@ -141,6 +144,8 @@ async function handleNotebookKernel(api, uri, context) {
 			const message = `Jupyter Notebook Cell Completed`;
 			const time_diff = new Date() - timestamp;
 			handleMeerkatNotification(message, time_diff, "jupyter");
+			logNotificationHistory(context);
+			checkSurveyTrigger(context);
 			timestamp = null;
 		}
 	}));
@@ -169,7 +174,7 @@ async function notebookWatcher(context) {
  * Terminal Watcher
  */
 
-async function terminalHandler(pid) {
+async function terminalHandler(pid, context) {
 	let childPIDs = new Map();
 	while (activePIDs.includes(pid)) {
 		//get child PIDs
@@ -191,6 +196,8 @@ async function terminalHandler(pid) {
 				const message = `Terminal Process Completed: ${childPIDs.get(childPID).command}`;
 				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
 				handleMeerkatNotification(message, time_diff, "terminal");
+				logNotificationHistory(context);
+				checkSurveyTrigger(context);
 				childPIDs.delete(childPID);
 			}
 		}
@@ -199,12 +206,12 @@ async function terminalHandler(pid) {
 	}
 }
 
-async function terminalWatcher(terminal) {
+async function terminalWatcher(terminal, context) {
 	if (terminal !== undefined) {
 		let pid = await terminal.processId;
 		if(!activePIDs.includes(pid)) {
 			activePIDs.push(pid);
-			terminalHandler(pid);
+			terminalHandler(pid, context);
 		}
 	} else {
 		// no active terminal defined, remove all active PIDs
@@ -235,6 +242,8 @@ async function activate(context) {
 			const message = `Run (${e.type}) Completed: ${e.name}`;
 			const time_diff = new Date() - timestamp;
 			handleMeerkatNotification(message, time_diff, "debug");
+			logNotificationHistory(context);
+			checkSurveyTrigger(context);
 			timestamp = null;
 		}
 	});
@@ -247,6 +256,8 @@ async function activate(context) {
 		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
 		const time_diff = new Date() - timestamp;
 		handleMeerkatNotification(message, time_diff, "task");
+		logNotificationHistory(context);
+		checkSurveyTrigger(context);
 		timestamp = null;
 	});
 
@@ -254,8 +265,8 @@ async function activate(context) {
 	notebookWatcher(context);
 
 	//start async terminal watcher
-	terminalWatcher(vscode.window.activeTerminal);
-	const terminalListener = vscode.window.onDidChangeActiveTerminal(terminalWatcher);
+	terminalWatcher(vscode.window.activeTerminal, context);
+	const terminalListener = vscode.window.onDidChangeActiveTerminal((t) => terminalWatcher(t, context));
 
 	context.subscriptions.push(debugStartTaskListener);
 	context.subscriptions.push(debugTaskListener);
