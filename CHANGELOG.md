@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.5.7]
+
+- Improve human-readable trigger duration
+
 ## [1.5.6]
 
 - Add survey prompt for extension feedback and improvement

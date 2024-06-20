@@ -4,6 +4,9 @@ const axios = require('axios');
 var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
 const psList = require('ps-list');
+const moment = require('moment');
+
+// Local Imports
 const SideBarProvider = require('./SideBarProvider');
 const checkSurveyTrigger = require('./surveyPrompt');
 const logNotificationHistory = require('./notificationHistory');
@@ -84,12 +87,15 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 	if (time_diff < minTriggerSeconds * 1000) {
 		return;
 	}
+
+	let moment_duration = moment.duration(time_diff);
+	let humaized_duration = moment_duration.humanize();
 	
 	if (meerkatioNotification === 'ping') {
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) throw err
 			});
-		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${time_diff} ms): ` + message);
+		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaized_duration}): ` + message);
 	
 		sendMeerkatLocal('ping', time_diff, trigger);
 	}
@@ -100,7 +106,7 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 			icon: extensionPath + "/images/logo-transparent.png",
 			timeout: 30
 		});
-		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${time_diff} ms): ` + message);
+		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaized_duration}): ` + message);
 	
 		sendMeerkatLocal('system', time_diff, trigger);
 	}

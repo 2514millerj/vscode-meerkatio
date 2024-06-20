@@ -75,6 +75,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.5.7
+
+Improve human-readable trigger duration
+
 ### 1.5.6
 
 Add survey prompt for extension feedback and improvement
