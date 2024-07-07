@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.6.0]
+
+- Add re-claimed time stat on side view and improved handling of parallel execution monitors
+
 ## [1.5.7]
 
 - Improve human-readable trigger duration

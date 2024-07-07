@@ -51,6 +51,9 @@ After creating your account, set the following Extension Settings to unlock the 
 ### System Notifications
 
 - On macOS make sure you have notifications enabled for `terminal-notifier` in order to have notifications show up in your system's notification center
+
+![MeerkatIO System Notification MacOS Permissions Example](./images/terminal-notifier-permissions.png)
+
 - On Linux, make sure you have `notify-osd` or `libnotify-bin` installed. (Installed by default on Ubuntu)
 
 ### Remote Development
@@ -75,6 +78,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.6.0
+
+Add re-claimed time stat on side view and improved handling of parallel execution monitors
+
 ### 1.5.7
 
 Improve human-readable trigger duration
@@ -90,18 +97,6 @@ Improve terminal watcher to account for the currently active terminal on extensi
 ### 1.5.4
 
 Bug fix for Jupyter Notebook notification handler
-
-### 1.5.3
-
-Implement the VS Code telemetry best practices and improve documentation
-
-### 1.5.1
-
-Fix bug with enable/disable notifications on Jupyter Cells and Terminal Processes
-
-### 1.5.0
-
-Released terminal notifier! Monitors your Visual Studio Code terminal processes across any operating system.
 
 
 **Thank you for your support!**
