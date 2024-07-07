@@ -8,7 +8,7 @@ function checkSurveyTrigger(context) {
     let notificationCount = context.globalState.get(NOTIF_COUNT_KEY);
     if (!notificationCount) return;
 
-    if (notificationCount % NOTIF_COUNT_TRIGGER === 0) {
+    if (notificationCount === NOTIF_COUNT_TRIGGER) {
         triggerSurveyPrompt();
     }
 }

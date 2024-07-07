@@ -6,15 +6,21 @@ const notifier = require('node-notifier');
 const psList = require('ps-list');
 const moment = require('moment');
 
-// Local Imports
+// Module Imports
 const SideBarProvider = require('./SideBarProvider');
+let sideBarProvider = new SideBarProvider();
+
 const checkSurveyTrigger = require('./surveyPrompt');
-const logNotificationHistory = require('./notificationHistory');
+
+const NotificationHistory = require('./notificationHistory');
+const logNotificationHistory = NotificationHistory.logNotificationHistory;
+const NotificationMonitor = NotificationHistory.NotificationMonitor;
+
+const ExtensionContext = require('./extensionContext');
 
 // Global Variables
 var extensionPath = "";
 const nc = new notifier.NotificationCenter();
-var timestamp = null;
 var activePIDs = [];
 
 function sleep(ms) {
@@ -93,8 +99,10 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 	
 	if (meerkatioNotification === 'ping') {
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
-			if (err) throw err
-			});
+			if (err) {
+				vscode.window.showErrorMessage("MeerkatIO: Failed to access audio device for Ping notification");
+			}
+		});
 		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaized_duration}): ` + message);
 	
 		sendMeerkatLocal('ping', time_diff, trigger);
@@ -105,6 +113,10 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 			message: message,
 			icon: extensionPath + "/images/logo-transparent.png",
 			timeout: 30
+		}, function (err, response) {
+			if (err !== null) {
+				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);
+			}
 		});
 		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaized_duration}): ` + message);
 	
@@ -143,16 +155,19 @@ async function handleNotebookKernel(api, uri, context) {
 	}
 	console.log(`New Jupyter Kernel found: ${uri}`);
 
+	const message = `Jupyter Notebook Cell Completed`;
+	let kernelMonitor = new NotificationMonitor(message, "jupyter", null);
+	kernelMonitor.uuid = uri;
+
 	context.subscriptions.push(kernel.onDidChangeStatus((e) => {
 		if (e === "busy") {
-			timestamp = new Date();
-		} else if (e === "idle" && timestamp !== null) {
-			const message = `Jupyter Notebook Cell Completed`;
-			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(message, time_diff, "jupyter");
-			logNotificationHistory(context);
+			kernelMonitor.startDatetime = new Date();
+		} else if (e === "idle" && kernelMonitor.startDatetime !== null) {
+			handleMeerkatNotification(kernelMonitor.message, kernelMonitor.duration, "jupyter");
+			logNotificationHistory(nm, context);
 			checkSurveyTrigger(context);
-			timestamp = null;
+			sideBarProvider.updateHtml();
+			kernelMonitor.startDatetime = null;
 		}
 	}));
 }
@@ -202,8 +217,10 @@ async function terminalHandler(pid, context) {
 				const message = `Terminal Process Completed: ${childPIDs.get(childPID).command}`;
 				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
 				handleMeerkatNotification(message, time_diff, "terminal");
-				logNotificationHistory(context);
+				let nm = new NotificationMonitor(message, "terminal", childPIDs.get(childPID).timestamp);
+				logNotificationHistory(nm, context);
 				checkSurveyTrigger(context);
+				sideBarProvider.updateHtml();
 				childPIDs.delete(childPID);
 			}
 		}
@@ -230,8 +247,8 @@ async function terminalWatcher(terminal, context) {
  */
 async function activate(context) {
 	extensionPath = context.extensionPath
-
-	const sideBarProvider = new SideBarProvider(context.extensionUri);
+	ExtensionContext.setExtensionContext(context);
+	
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			"meerkat-sidebar",
@@ -239,32 +256,36 @@ async function activate(context) {
 		)
 	);
 
+	/*
+	 * Run and Debug Monitor
+	 */
+	let debugMonitor = new NotificationMonitor(null, "debug", null);
 	const debugStartTaskListener = vscode.debug.onDidStartDebugSession((e) => {
-		timestamp = new Date();
+		debugMonitor.startDatetime = new Date();
 	});
-
 	const debugTaskListener = vscode.debug.onDidTerminateDebugSession((e) => {
 		if (e.parentSession === undefined) {
-			const message = `Run (${e.type}) Completed: ${e.name}`;
-			const time_diff = new Date() - timestamp;
-			handleMeerkatNotification(message, time_diff, "debug");
-			logNotificationHistory(context);
+			debugMonitor.message = `Run (${e.type}) Completed: ${e.name}`;
+			handleMeerkatNotification(debugMonitor.message, debugMonitor.duration, debugMonitor.trigger);
+			logNotificationHistory(debugMonitor, context);
 			checkSurveyTrigger(context);
-			timestamp = null;
+			sideBarProvider.updateHtml();
 		}
 	});
 
+	/*
+	 * Task Monitor
+	 */
+	let taskMonitor = new NotificationMonitor(null, "task", null);
 	const taskStartTaskListener = vscode.tasks.onDidStartTask((e) => {
-		timestamp = new Date();
+		taskMonitor.startDatetime = new Date();
 	});
-
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
-		const message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;
-		const time_diff = new Date() - timestamp;
-		handleMeerkatNotification(message, time_diff, "task");
-		logNotificationHistory(context);
+		taskMonitor.message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;		
+		handleMeerkatNotification(taskMonitor.message, taskMonitor.duration, taskMonitor.trigger);
+		logNotificationHistory(taskMonitor, context);
 		checkSurveyTrigger(context);
-		timestamp = null;
+		sideBarProvider.updateHtml();
 	});
 
 	//start async Jupyter notebook watcher for when a user opens new notebooks

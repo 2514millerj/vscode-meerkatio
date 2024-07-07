@@ -1,8 +1,15 @@
 const vscode = require("vscode");
+const moment = require('moment');
+
+const Constants = require('./constants');
+const ExtensionContext = require('./extensionContext');
 
 class SideBarProvider {
-    constructor(_extensionUri) {
-        this._extensionUri = _extensionUri;
+
+    updateHtml() {
+        if (this._view) {
+            this._view.webview.html = this._getHtmlForWebview();
+        }
     }
 
     resolveWebviewView(webviewView, context, _token) {
@@ -13,7 +20,7 @@ class SideBarProvider {
             allowScripts: true
         };
 
-        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        webviewView.webview.html = this._getHtmlForWebview();
 
         // Listen for messages from the Sidebar component and execute action
         webviewView.webview.onDidReceiveMessage(
@@ -43,8 +50,8 @@ class SideBarProvider {
         let disableBtnVis = enabled ? "block" : "none";
 
         return `
-                <button id="disableNotificationsButton" style="display: ${disableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 80%;">Disable Notifications</button>
-                <button id="enableNotificationsButton" style="display: ${enableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 80%;">Enable Notifications</button>
+                <button id="disableNotificationsButton" style="margin: 0 auto; margin-top: 10px; display: ${disableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Disable Notifications</button>
+                <button id="enableNotificationsButton" style="margin: 0 auto; margin-top: 10px; display: ${enableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Enable Notifications</button>
             `
     }
 
@@ -52,7 +59,7 @@ class SideBarProvider {
         let token = vscode.workspace.getConfiguration('meerkat').get('token', null);
         if (!token) {
             return `
-                <a href="https://meerkatio.com/register" style="text-decoration: none;"><button style="color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 80%;">Start Free Trial</button></a>
+                <a href="https://meerkatio.com/register" style="text-decoration: none;"><button style="color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%; display: block; margin: 0 auto; margin-top: 10px;">Start Free Trial</button></a>
                 <p><a href="https://meerkatio.com/login">Or sign in</a> and add your token to the workspace if you already have a MeerkatIO Pro account</p>
                 `
         } else {
@@ -63,8 +70,18 @@ class SideBarProvider {
         }
     }
 
-    _getHtmlForWebview(webview) {
-        const nonce = getNonce()
+    _getDurationSaved() {
+        let context = ExtensionContext.getExtensionContext();
+        let timeSaved = context.globalState.get(Constants.NOTIF_TOTAL_DURATION_KEY);
+
+        if (timeSaved) {
+            let momentDuration = moment.duration(timeSaved);
+	        return "<h2>" + capitalizeEachWord(momentDuration.humanize()) + "<br> Re-claimed to Date!</h2><hr />";
+        }
+    }
+
+    _getHtmlForWebview() {
+        const nonce = getNonce();
         return `
             <!DOCTYPE html>
             <html lang="en">
@@ -75,13 +92,19 @@ class SideBarProvider {
                 <title>MeerkatIO Extension</title>
             </head>
             <body>
-                <h1>Welcome to MeerkatIO</h1>
+                <h1>MeerkatIO</h1>
                 <p>The personal notification tool for software developers and data scientists that <strong>fits your workflow</strong>.</p>
                 <hr />
 
+                ${this._getDurationSaved()}
+
                 <h2>Quick Actions</h2>
-                ${this._getNotificationActionButton()}
-                
+
+                <div>
+                    ${this._getNotificationActionButton()}
+                    <a style="text-decoration: none;" href="https://meerkatio.com/account"><button style="display: block; margin: 0 auto; margin-top: 10px; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Configure Notification Channels</button></a>
+                </div>
+
                 <hr />
                 <h2>Account Management</h2>
                 <p>Ping and System notifications are always free and accessible to everyone!</p> 
@@ -138,5 +161,9 @@ function getNonce() {
     }
     return text;
 }
+
+function capitalizeEachWord(str) {
+    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  }
 
 module.exports = SideBarProvider;
