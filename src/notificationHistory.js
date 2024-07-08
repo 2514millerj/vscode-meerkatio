@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Constants = require('./constants');
 
 module.exports.NotificationMonitor = class {

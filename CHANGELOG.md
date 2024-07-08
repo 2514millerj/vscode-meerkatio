@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.6.1]
+
+- Fix bug with undefined package in some environments
+
 ## [1.6.0]
 
 - Add re-claimed time stat on side view and improved handling of parallel execution monitors

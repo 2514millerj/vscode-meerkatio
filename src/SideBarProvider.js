@@ -77,6 +77,8 @@ class SideBarProvider {
         if (timeSaved) {
             let momentDuration = moment.duration(timeSaved);
 	        return "<h2>" + capitalizeEachWord(momentDuration.humanize()) + "<br> Re-claimed to Date!</h2><hr />";
+        } else {
+            return "<br>";
         }
     }
 

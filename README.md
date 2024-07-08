@@ -78,6 +78,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.6.1
+
+Fix bug with undefined package in some environments
+
 ### 1.6.0
 
 Add re-claimed time stat on side view and improved handling of parallel execution monitors

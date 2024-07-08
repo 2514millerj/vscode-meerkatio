@@ -111,8 +111,7 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 		nc.notify({
 			title: 'MeerkatIO Alert',
 			message: message,
-			icon: extensionPath + "/images/logo-transparent.png",
-			timeout: 30
+			icon: extensionPath + "/images/logo-transparent.png"
 		}, function (err, response) {
 			if (err !== null) {
 				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);
@@ -164,7 +163,7 @@ async function handleNotebookKernel(api, uri, context) {
 			kernelMonitor.startDatetime = new Date();
 		} else if (e === "idle" && kernelMonitor.startDatetime !== null) {
 			handleMeerkatNotification(kernelMonitor.message, kernelMonitor.duration, "jupyter");
-			logNotificationHistory(nm, context);
+			logNotificationHistory(kernelMonitor, context);
 			checkSurveyTrigger(context);
 			sideBarProvider.updateHtml();
 			kernelMonitor.startDatetime = null;
