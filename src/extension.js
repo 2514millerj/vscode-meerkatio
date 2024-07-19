@@ -52,7 +52,7 @@ function sendMeerkatLocal(method, time_diff, trigger) {
 	});
 }
 
-function sendMeerkatNotification(method, message) {
+function sendMeerkatNotification(method, message, duration_ms, trigger) {
     const url = 'https://meerkatio.com/api/notification/send';
 
 	const token = vscode.workspace.getConfiguration('meerkat').get('token');
@@ -64,7 +64,10 @@ function sendMeerkatNotification(method, message) {
     const data = {
         meerkat_token: token,
         method,
-		message: "From VS Code: " + message
+		message: "From VS Code: " + message,
+		duration_ms,
+		source_uid: vscode.env.machineId,
+		trigger
     };
 
     axios.post(url, data, {
@@ -83,6 +86,7 @@ function sendMeerkatNotification(method, message) {
 	});
 }
 
+//return boolean sent true/false
 function handleMeerkatNotification(message, time_diff, trigger) {
 	console.log("MeerkatIO Notification Triggered");
 	if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
@@ -122,13 +126,13 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 		sendMeerkatLocal('system', time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'slack') {
-		sendMeerkatNotification('slack', message);
+		sendMeerkatNotification('slack', message, time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'sms') {
-		sendMeerkatNotification('sms', message);
+		sendMeerkatNotification('sms', message, time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'email') {
-		sendMeerkatNotification('email', message);
+		sendMeerkatNotification('email', message, time_diff, trigger);
 	}
 }
 

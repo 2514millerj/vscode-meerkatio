@@ -1,4 +1,4 @@
-# MeerkatIO Extension for Visual Studio Code
+# MeerkatIO - Your Personal Notification Tool
 
 [MeerkatIO](https://meerkatio.com) is the personal notification tool that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips including Jupyter, Terminal, Run+Debug, and VS Code Tasks.
 
@@ -14,7 +14,8 @@
 The MeerkatIO VS Code Extension supports the following notification channels:
 - Ping (sound)
 - System Notification
-- Slack Direct Message
+- Slack Direct Message 
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/v2/authorize?client_id=6908270676551.6916200280070&scope=chat:write&user_scope=)
 - SMS
 - Email
 
@@ -78,6 +79,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.6.2
+
+Save notification task duration and trigger for future analysis/reporting
+
 ### 1.6.1
 
 Fix bug with undefined package in some environments
@@ -97,10 +102,6 @@ Add survey prompt for extension feedback and improvement
 ### 1.5.5
 
 Improve terminal watcher to account for the currently active terminal on extension activation
-
-### 1.5.4
-
-Bug fix for Jupyter Notebook notification handler
 
 
 **Thank you for your support!**
