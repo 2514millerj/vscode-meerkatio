@@ -128,6 +128,9 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 	else if (meerkatioNotification === 'slack') {
 		sendMeerkatNotification('slack', message, time_diff, trigger);
 	}
+	else if (meerkatioNotification === 'teams') {
+		sendMeerkatNotification('teams', message, time_diff, trigger);
+	}
 	else if (meerkatioNotification === 'sms') {
 		sendMeerkatNotification('sms', message, time_diff, trigger);
 	}

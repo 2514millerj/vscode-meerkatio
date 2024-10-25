@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "engines": {
     "vscode": "^1.63.0"
   },
@@ -24,6 +24,7 @@
     "remote work",
     "productivity",
     "slack",
+    "Microsoft Teams",
     "sms",
     "email",
     "system tray",
@@ -65,6 +66,7 @@
             "ping",
             "system",
             "slack",
+            "teams",
             "sms",
             "email"
           ],
@@ -72,6 +74,7 @@
             "(default) Sound Notification",
             "System Tray Notification",
             "Slack Notification",
+            "Microsoft Teams Notification",
             "SMS Notification",
             "Email Notification"
           ]

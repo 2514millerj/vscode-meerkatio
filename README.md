@@ -14,8 +14,8 @@
 The MeerkatIO VS Code Extension supports the following notification channels:
 - Ping (sound)
 - System Notification
-- Slack Direct Message 
-[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/v2/authorize?client_id=6908270676551.6916200280070&scope=chat:write&user_scope=)
+- Slack
+- Microsoft Teams
 - SMS
 - Email
 
@@ -39,6 +39,7 @@ After creating your account, set the following Extension Settings to unlock the 
     * ping
     * system
     * slack
+    * teams
     * email
     * sms
 * `meerkat.enabled`: Toggle MeerkatIO notifications on and off
@@ -78,6 +79,10 @@ After creating your account, set the following Extension Settings to unlock the 
 The MeerkatIO extension collects telemetry data to help build a better VS Code experience. This extension does not send any telemetry from notification trigger sources including commands, paths, files, or personally identifiable information. The extension respects the telemetry.enableTelemetry setting which you can learn more about in the [Visual Studio Code FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Release Notes
+
+### 1.7.0
+
+Added Microsoft Teams notifications integration
 
 ### 1.6.2
 

@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.7.0]
+
+- Added Microsoft Teams notifications integration
+
 ## [1.6.2]
 
 - Save notification task duration and trigger for future analysis/reporting
