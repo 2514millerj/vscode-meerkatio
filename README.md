@@ -16,6 +16,7 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 - System Notification
 - Slack
 - Microsoft Teams
+- Google Chat
 - SMS
 - Email
 
@@ -27,7 +28,7 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 - Slack yourself an update on your build pipeline while you are taking your dog for a walk so you know when to head back
 
 ## Quickstart
-No setup is required to use the Ping or System commands with this extension, but in order to access Slack, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
+No setup is required to use the Ping or System commands with this extension, but in order to access Slack, Microsoft Teams, Google Chat, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
 
 MeerkatIO notifications will automatically (after a window reload) execute for all task, debug, and Jupyter cell executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current workflow!
 
@@ -40,6 +41,7 @@ After creating your account, set the following Extension Settings to unlock the 
     * system
     * slack
     * teams
+    * google_chat
     * email
     * sms
 * `meerkat.enabled`: Toggle MeerkatIO notifications on and off
@@ -80,6 +82,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.8.0
+
+Added Google Chat notifications integration. Improved sign in experience using VS Code authentication sessions with GitHub.
+
 ### 1.7.0
 
 Added Microsoft Teams notifications integration
@@ -95,18 +101,6 @@ Fix bug with undefined package in some environments
 ### 1.6.0
 
 Add re-claimed time stat on side view and improved handling of parallel execution monitors
-
-### 1.5.7
-
-Improve human-readable trigger duration
-
-### 1.5.6
-
-Add survey prompt for extension feedback and improvement
-
-### 1.5.5
-
-Improve terminal watcher to account for the currently active terminal on extension activation
 
 
 **Thank you for your support!**

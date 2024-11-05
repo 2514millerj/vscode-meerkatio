@@ -17,6 +17,8 @@ const logNotificationHistory = NotificationHistory.logNotificationHistory;
 const NotificationMonitor = NotificationHistory.NotificationMonitor;
 
 const ExtensionContext = require('./extensionContext');
+const { meerkatAuthenticate } = require('./authentication');
+const Constants = require('./constants');
 
 // Global Variables
 var extensionPath = "";
@@ -55,7 +57,8 @@ function sendMeerkatLocal(method, time_diff, trigger) {
 function sendMeerkatNotification(method, message, duration_ms, trigger) {
     const url = 'https://meerkatio.com/api/notification/send';
 
-	const token = vscode.workspace.getConfiguration('meerkat').get('token');
+	const context = ExtensionContext.getExtensionContext();
+	const token = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN);
 	if (!token) {
 		vscode.window.showErrorMessage("MeerkatIO: No token found. Check configuration and try again.");
 		return;
@@ -130,6 +133,9 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 	}
 	else if (meerkatioNotification === 'teams') {
 		sendMeerkatNotification('teams', message, time_diff, trigger);
+	}
+	else if (meerkatioNotification === 'google_chat') {
+		sendMeerkatNotification('google_chat', message, time_diff, trigger);
 	}
 	else if (meerkatioNotification === 'sms') {
 		sendMeerkatNotification('sms', message, time_diff, trigger);
@@ -253,7 +259,6 @@ async function terminalWatcher(terminal, context) {
  */
 async function activate(context) {
 	extensionPath = context.extensionPath
-	ExtensionContext.setExtensionContext(context);
 	
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
@@ -294,10 +299,14 @@ async function activate(context) {
 		sideBarProvider.updateHtml();
 	});
 
-	//start async Jupyter notebook watcher for when a user opens new notebooks
+	/*
+	 * Jupyter Monitor
+	 */
 	notebookWatcher(context);
 
-	//start async terminal watcher
+	/*
+	 * Terminal Monitor
+	 */
 	terminalWatcher(vscode.window.activeTerminal, context);
 	const terminalListener = vscode.window.onDidChangeActiveTerminal((t) => terminalWatcher(t, context));
 
@@ -307,10 +316,42 @@ async function activate(context) {
 	context.subscriptions.push(taskListener);
 	context.subscriptions.push(terminalListener);
 
-	// This line of code will only be executed once when your extension is activated
-	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
-		vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!');
+	/*
+	 * Account Login Command
+	 */
+	context.subscriptions.push(vscode.commands.registerCommand('meerkat.login', async () => {
+        const authenticated = await meerkatAuthenticate();
+        if (authenticated) {
+			sideBarProvider.updateHtml();
+            vscode.window.showInformationMessage(`Successfully logged in to MeerkatIO`, ["Configure Notifications"]).then((selection) => {
+				if (selection === 'Configure Notifications') {
+					// Open the extension's settings
+					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkatio');
+				}
+			});
+        }
+    }));
 
+	ExtensionContext.setExtensionContext(context);
+
+	// Authentication + Account Configuration
+	let authenticated = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN)
+	if (vscode.workspace.getConfiguration('meerkat').get('enabled', true))
+		if (authenticated)
+			vscode.window.showInformationMessage('MeerkatIO - your notification manager - has enabled your Pro account!', "Configure Notifications").then((selection) => {
+				if (selection === 'Configure Notifications') {
+					// Open the extension's settings
+					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkat');
+				}
+			});
+		else
+			vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!', "Log In to MeerkatIO Pro with GitHub").then((selection) => {
+				console.log(selection);
+				if (selection === 'Log In to MeerkatIO Pro with GitHub') {
+					// Run login command
+					vscode.commands.executeCommand("meerkat.login");
+				}
+			});
 }
 
 // This method is called when your extension is deactivated

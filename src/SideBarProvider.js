@@ -37,6 +37,9 @@ class SideBarProvider {
                             webviewView.webview.postMessage('enabled'); 
                         });
                         break;
+                    case "login":
+                        vscode.commands.executeCommand("meerkat.login");
+                        break;
                 }
                           
             }
@@ -56,10 +59,12 @@ class SideBarProvider {
     }
 
     _getAccountOption() {
-        let token = vscode.workspace.getConfiguration('meerkat').get('token', null);
+        const context = ExtensionContext.getExtensionContext();
+	    const token = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN);
+	
         if (!token) {
             return `
-                <a href="https://meerkatio.com/register" style="text-decoration: none;"><button style="color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%; display: block; margin: 0 auto; margin-top: 10px;">Start Free Trial</button></a>
+                <button id="startFreeTrialButton" style="margin: 0 auto; margin-top: 10px; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Start Free Trial</button>
                 <p><a href="https://meerkatio.com/login">Or sign in</a> and add your token to the workspace if you already have a MeerkatIO Pro account</p>
                 `
         } else {
@@ -110,14 +115,14 @@ class SideBarProvider {
                 <hr />
                 <h2>Account Management</h2>
                 <p>Ping and System notifications are always free and accessible to everyone!</p> 
-                <p>MeerkatIO accounts unlock Slack, SMS, and Email notification channels - free for the first month!</p>
+                <p>MeerkatIO accounts unlock Slack, Teams, Google Chat, SMS, and Email notification channels - free for the first month!</p>
                 
                 ${this._getAccountOption()}
                 
                 <hr />
                 <h2>Resources</h2>
-                <p><a href="https://meerkatio.com/docs" style="text-decoration: none;"><i class="fa fa-book" aria-none="true"></i> Documentation</a></p>
-                <p><a href="https://github.com/2514millerj/vscode-meerkatio/issues" style="text-decoration: none;">Issues</a></p>
+                <p><a href="https://meerkatio.com/docs" style="text-decoration: none;"><i class="fa fa-book" aria-none="true"></i>Documentation</a></p>
+                <p><a href="https://www.surveymonkey.com/r/RMX2TL9" style="text-decoration: none;">Submit Feedback</a></p>
                 <p><a href="https://meerkatio.com" style="text-decoration: none;">MeerkatIO Website</a></p>
                 <p><a href="https://marketplace.visualstudio.com/items?itemName=MeerkatIO.meerkatio" style="text-decoration: none;">Marketplace</a></p>
                 <p><a href="https://github.com/2514millerj/vscode-meerkatio" style="text-decoration: none;">GitHub</a></p>
@@ -136,6 +141,13 @@ class SideBarProvider {
                         document.getElementById('enableNotificationsButton').addEventListener('click', () => {
                             // Send a message to the extension when the button is clicked
                             vscode.postMessage('enable');
+                        });
+                    } catch (e) {}
+
+                    try{
+                        document.getElementById('startFreeTrialButton').addEventListener('click', () => {
+                            // Send a message to the extension when the button is clicked
+                            vscode.postMessage('login');
                         });
                     } catch (e) {}
 

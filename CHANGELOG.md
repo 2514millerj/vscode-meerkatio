@@ -2,6 +2,11 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.8.0]
+
+- Added Google Chat notifications integration. 
+- Improved sign in experience using VS Code authentication sessions with GitHub.
+
 ## [1.7.0]
 
 - Added Microsoft Teams notifications integration

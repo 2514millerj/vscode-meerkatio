@@ -3,9 +3,9 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.95.0"
   },
   "extensionKind": [
     "workspace"
@@ -25,6 +25,7 @@
     "productivity",
     "slack",
     "Microsoft Teams",
+    "Google Chat",
     "sms",
     "email",
     "system tray",
@@ -48,13 +49,19 @@
   },
   "main": "./src/extension.js",
   "contributes": {
+    "commands":[
+      {
+        "command": "meerkat.login", 
+        "title": "MeerkatIO: Login"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "MeerkatIO Notification Options",
       "properties": {
         "meerkat.token": {
           "type": "string",
-          "description": "MeerkatIO Platform token for enabling Slack, SMS, and Email notifications",
+          "description": "MeerkatIO Platform token for enabling Slack, Microsoft Teams, Google Chat, SMS, and Email notifications. This property only needs to be set if you did not log in through the VS Code OAuth flow using GitHub.",
           "scope": "resource"
         },
         "meerkat.meerkatNotification": {
@@ -67,6 +74,7 @@
             "system",
             "slack",
             "teams",
+            "google_chat",
             "sms",
             "email"
           ],
@@ -75,6 +83,7 @@
             "System Tray Notification",
             "Slack Notification",
             "Microsoft Teams Notification",
+            "Google Chat Notification",
             "SMS Notification",
             "Email Notification"
           ]
@@ -143,7 +152,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
-    "@types/vscode": "^1.30.0",
+    "@types/vscode": "^1.95.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.56.0",
