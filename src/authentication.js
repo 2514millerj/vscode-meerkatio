@@ -85,5 +85,7 @@ module.exports.checkMeerkatAccount = async function () {
         context.globalState.update(Constants.ACCOUNT_TYPE, account_type);
         context.globalState.update(Constants.ACCOUNT_VALID, token_valid);
         context.globalState.update(Constants.ACCOUNT_EMAIL, email);
+
+        setExtensionContext(context);
     }
 }

@@ -90,8 +90,7 @@ class SideBarProvider {
                 return `
                     <p>Looks like you have your MeerkatIO token all set. Thank you for using MeerkatIO Pro!</p>
                 `
-            }
-            
+            }            
         }
     }
 
