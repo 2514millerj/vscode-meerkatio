@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -19,6 +19,7 @@
   "keywords": [
     "alert",
     "notification",
+    "terminal history",
     "task",
     "debug",
     "remote work",
@@ -49,9 +50,9 @@
   },
   "main": "./src/extension.js",
   "contributes": {
-    "commands":[
+    "commands": [
       {
-        "command": "meerkat.login", 
+        "command": "meerkat.login",
         "title": "MeerkatIO: Login"
       }
     ],
@@ -109,6 +110,13 @@
           "title": "MeerkatIO",
           "icon": "images/logo-transparent.png"
         }
+      ],
+      "panel": [
+        {
+          "id": "meerkat-bottom-panel-view",
+          "title": "MeerkatIO",
+          "icon": "images/logo-transparent.png"
+        }
       ]
     },
     "views": {
@@ -118,6 +126,13 @@
           "id": "meerkat-sidebar",
           "name": "Home",
           "icon": "images/logo-transparent.png"
+        }
+      ],
+      "meerkat-bottom-panel-view": [
+        {
+          "type": "webview",
+          "id": "meerkat-bottom-panel",
+          "name": "MeerkatIO"
         }
       ]
     },
@@ -142,7 +157,6 @@
     "test": "vscode-test"
   },
   "dependencies": {
-    "@vscode/jupyter-extension": "^1.1.1",
     "axios": "^1.6.8",
     "moment": "^2.30.1",
     "node-notifier": "^10.0.1",

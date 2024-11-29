@@ -1,14 +1,15 @@
 const vscode = require('vscode');
 
+const Constants = require('./constants');
+
 const NOTIF_COUNT_TRIGGER = 50;
-const NOTIF_COUNT_KEY = "notif_count";
 
 function checkSurveyTrigger(context) {
     //Store notification data and run post-notification tasks
-    let notificationCount = context.globalState.get(NOTIF_COUNT_KEY);
-    if (!notificationCount) return;
+    let notifications = context.globalState.get(Constants.NOTIF_HISTORY, []);
+    if (!notifications) return;
 
-    if (notificationCount === NOTIF_COUNT_TRIGGER) {
+    if (notifications.length === NOTIF_COUNT_TRIGGER) {
         triggerSurveyPrompt();
     }
 }

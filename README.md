@@ -30,7 +30,14 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 ## Quickstart
 No setup is required to use the Ping or System commands with this extension, but in order to access Slack, Microsoft Teams, Google Chat, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
 
-MeerkatIO notifications will automatically (after a window reload) execute for all task, debug, and Jupyter cell executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current workflow!
+MeerkatIO notifications will automatically (after a window reload) execute for all task, debug, terminal, and Jupyter cell executions. The communication channel can be quickly changed and notifications can easily be toggled on and off to fit your current workflow!
+
+## Additional Pro Features!
+
+### 📜 Notification History
+
+    - Easily access your execution history to review detailed records of past executions. 
+    - Quickly find out how long an execution took and conveniently copy the execution details for further use.
 
 ## Extension Settings
 After creating your account, set the following Extension Settings to unlock the full MeerkatIO Platform command set:
@@ -82,6 +89,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.9.0
+
+New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.
+
 ### 1.8.0
 
 Added Google Chat notifications integration. Improved sign in experience using VS Code authentication sessions with GitHub.
@@ -97,10 +108,6 @@ Save notification task duration and trigger for future analysis/reporting
 ### 1.6.1
 
 Fix bug with undefined package in some environments
-
-### 1.6.0
-
-Add re-claimed time stat on side view and improved handling of parallel execution monitors
 
 
 **Thank you for your support!**

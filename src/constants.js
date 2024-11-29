@@ -3,9 +3,10 @@
 module.exports = {
     // Account Data
     MEERKATIO_TOKEN: "meerkatio_token",
+    ACCOUNT_TYPE: "meerkatio_account_type",
+    ACCOUNT_VALID: "meerkatio_account_valid",
+    ACCOUNT_EMAIL: "meerkatio_email",
 
     // Notification Data
-    NOTIF_COUNT_KEY: "notif_count",
-    NOTIF_TOTAL_DURATION_KEY: "notif_total_duration",
-    NOTIF_HISTORY: "notif_history"
+    NOTIF_HISTORY: "meerkatio_notification_history"
 }

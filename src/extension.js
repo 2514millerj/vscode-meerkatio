@@ -9,6 +9,8 @@ const moment = require('moment');
 // Module Imports
 const SideBarProvider = require('./SideBarProvider');
 let sideBarProvider = new SideBarProvider();
+const BottomPanelProvider = require('./BottomPanelProvider');
+let bottomPanelProvider = new BottomPanelProvider();
 
 const checkSurveyTrigger = require('./surveyPrompt');
 
@@ -17,7 +19,7 @@ const logNotificationHistory = NotificationHistory.logNotificationHistory;
 const NotificationMonitor = NotificationHistory.NotificationMonitor;
 
 const ExtensionContext = require('./extensionContext');
-const { meerkatAuthenticate } = require('./authentication');
+const { meerkatAuthenticate, checkMeerkatAccount } = require('./authentication');
 const Constants = require('./constants');
 
 // Global Variables
@@ -27,6 +29,14 @@ var activePIDs = [];
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isValidNotification(durationMs) {
+	if (durationMs / 1000 >= vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 30) && vscode.workspace.getConfiguration('meerkat').get('enabled', true)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function sendMeerkatLocal(method, time_diff, trigger) {
@@ -79,9 +89,10 @@ function sendMeerkatNotification(method, message, duration_ms, trigger) {
         }
     }).then(response => {
 		if (response.status === 200)
+			//TODO: save account type from response
 			vscode.window.showInformationMessage("MeerkatIO: " + message);
 		else
-			vscode.window.showErrorMessage("MeerkatIO: failed to send notification. Please check your credentials and valid configuration options.");
+			vscode.window.showErrorMessage("MeerkatIO: " + response.data.error);
 	})
 	.catch(error => {
 		console.log(error);
@@ -91,15 +102,7 @@ function sendMeerkatNotification(method, message, duration_ms, trigger) {
 
 //return boolean sent true/false
 function handleMeerkatNotification(message, time_diff, trigger) {
-	console.log("MeerkatIO Notification Triggered");
-	if (!vscode.workspace.getConfiguration('meerkat').get('enabled', true))
-		return;
-
 	const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
-	let minTriggerSeconds = vscode.workspace.getConfiguration('meerkat').get('triggerMinDurationSeconds', 30);
-	if (time_diff < minTriggerSeconds * 1000) {
-		return;
-	}
 
 	let moment_duration = moment.duration(time_diff);
 	let humaized_duration = moment_duration.humanize();
@@ -149,58 +152,28 @@ function handleMeerkatNotification(message, time_diff, trigger) {
  * Jupyter Notebook Watcher
  */
 
-async function handleNotebookKernel(api, uri, context) {
-	let kernelFound = false;
-	let kernel = undefined;
-	while(!kernelFound) {
-		try {
-			if (api.kernels !== undefined) {
-				kernel = await api.kernels.getKernel(uri);
-				if (kernel !== undefined) {
-					kernelFound = true;
-				}
-			}
-		} catch(e) {
-			console.log(e);
-		}
-		await sleep(1000);
-	}
-	console.log(`New Jupyter Kernel found: ${uri}`);
-
-	const message = `Jupyter Notebook Cell Completed`;
-	let kernelMonitor = new NotificationMonitor(message, "jupyter", null);
-	kernelMonitor.uuid = uri;
-
-	context.subscriptions.push(kernel.onDidChangeStatus((e) => {
-		if (e === "busy") {
-			kernelMonitor.startDatetime = new Date();
-		} else if (e === "idle" && kernelMonitor.startDatetime !== null) {
-			handleMeerkatNotification(kernelMonitor.message, kernelMonitor.duration, "jupyter");
-			logNotificationHistory(kernelMonitor, context);
-			checkSurveyTrigger(context);
-			sideBarProvider.updateHtml();
-			kernelMonitor.startDatetime = null;
-		}
-	}));
-}
-
 async function notebookWatcher(context) {
-	const jupyterExt = vscode.extensions.getExtension('ms-toolsai.jupyter');
-	if (jupyterExt) {
-		const api = await jupyterExt.activate();
-		
-		let existingDocs = [];
-		while(true) {
-			for (const document of vscode.workspace.notebookDocuments) {
-				if (!existingDocs.includes(document.uri)) {
-					console.log(`New Jupyter Notebook Detected: ${document.uri}`)
-					handleNotebookKernel(api, document.uri, context);
-					existingDocs.push(document.uri);
+	vscode.workspace.onDidChangeNotebookDocument((event) => {
+		for(let cell of event.cellChanges) {
+			if (cell.executionSummary?.timing) {
+				//Cell completed
+				let startTime = new Date(cell.executionSummary.timing.startTime);
+				let endTime = new Date(cell.executionSummary.timing.endTime);
+				let message = `Cell #${cell.cell.index} in notebook ${event.notebook.uri.path.split("/").pop()} ${cell.executionSummary.success ? "Completed Successfully" : "Execution Failed"}`;
+				let kernelMonitor = new NotificationMonitor(message, "jupyter", startTime);
+				kernelMonitor.uuid = event.notebook.uri.path;
+				kernelMonitor.setEndDatetime(endTime);
+
+				if (isValidNotification(kernelMonitor.duration)) {
+					handleMeerkatNotification(kernelMonitor.message, kernelMonitor.duration, "jupyter");
+					logNotificationHistory(kernelMonitor, context);
+					checkSurveyTrigger(context);
 				}
+				sideBarProvider.updateHtml();
+				bottomPanelProvider.updateHtml();
 			}
-			await sleep(1000);
-		}	
-	}
+		}
+	});
 }
 
 /*
@@ -218,7 +191,7 @@ async function terminalHandler(pid, context) {
 		const PIDList = [];
 		for (const task of childTasks) {
 			if (!childPIDs.has(task.pid)) {
-				childPIDs.set(task.pid, {timestamp: new Date(), command: task.cmd});
+				childPIDs.set(task.pid, {timestamp: new Date(), command: task.cmd ? task.cmd : task.name});
 			}
 			PIDList.push(task.pid);
 		}
@@ -226,13 +199,18 @@ async function terminalHandler(pid, context) {
 		// ended tasks
 		for(const childPID of Array.from(childPIDs.keys())) {
 			if (!PIDList.includes(childPID)) {
-				const message = `Terminal Process Completed: ${childPIDs.get(childPID).command}`;
+				let terminalCommand = childPIDs.get(childPID).command;
+				const message = `Terminal Process Completed${terminalCommand ? ": " + terminalCommand : ""}`;
 				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
-				handleMeerkatNotification(message, time_diff, "terminal");
 				let nm = new NotificationMonitor(message, "terminal", childPIDs.get(childPID).timestamp);
-				logNotificationHistory(nm, context);
-				checkSurveyTrigger(context);
+				nm.setEndDatetime(new Date());
+				if (isValidNotification(nm.duration)) {
+					handleMeerkatNotification(message, time_diff, "terminal");
+					logNotificationHistory(nm, context);
+					checkSurveyTrigger(context);
+				}
 				sideBarProvider.updateHtml();
+				bottomPanelProvider.updateHtml();
 				childPIDs.delete(childPID);
 			}
 		}
@@ -258,14 +236,28 @@ async function terminalWatcher(terminal, context) {
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-	extensionPath = context.extensionPath
+	// Init
+	extensionPath = context.extensionPath;
+	ExtensionContext.setExtensionContext(context);
 	
+	// Add WebViews
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			"meerkat-sidebar",
 			sideBarProvider
 		)
 	);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			"meerkat-bottom-panel",
+			bottomPanelProvider
+		)
+	);
+
+	// Get User Info
+	await checkMeerkatAccount();
+	sideBarProvider.updateHtml();
+	bottomPanelProvider.updateHtml();
 
 	/*
 	 * Run and Debug Monitor
@@ -277,10 +269,14 @@ async function activate(context) {
 	const debugTaskListener = vscode.debug.onDidTerminateDebugSession((e) => {
 		if (e.parentSession === undefined) {
 			debugMonitor.message = `Run (${e.type}) Completed: ${e.name}`;
-			handleMeerkatNotification(debugMonitor.message, debugMonitor.duration, debugMonitor.trigger);
-			logNotificationHistory(debugMonitor, context);
-			checkSurveyTrigger(context);
+			debugMonitor.setEndDatetime(new Date());
+			if (isValidNotification(debugMonitor.duration)) {
+				handleMeerkatNotification(debugMonitor.message, debugMonitor.duration, debugMonitor.trigger);
+				logNotificationHistory(debugMonitor, context);
+				checkSurveyTrigger(context);
+			}
 			sideBarProvider.updateHtml();
+			bottomPanelProvider.updateHtml();
 		}
 	});
 
@@ -293,10 +289,14 @@ async function activate(context) {
 	});
 	const taskListener = vscode.tasks.onDidEndTask((e) => {
 		taskMonitor.message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;		
-		handleMeerkatNotification(taskMonitor.message, taskMonitor.duration, taskMonitor.trigger);
-		logNotificationHistory(taskMonitor, context);
-		checkSurveyTrigger(context);
+		taskMonitor.setEndDatetime(new Date());
+		if (isValidNotification(taskMonitor.duration)) {
+			handleMeerkatNotification(taskMonitor.message, taskMonitor.duration, taskMonitor.trigger);
+			logNotificationHistory(taskMonitor, context);
+			checkSurveyTrigger(context);
+		}
 		sideBarProvider.updateHtml();
+		bottomPanelProvider.updateHtml();
 	});
 
 	/*
@@ -323,16 +323,15 @@ async function activate(context) {
         const authenticated = await meerkatAuthenticate();
         if (authenticated) {
 			sideBarProvider.updateHtml();
-            vscode.window.showInformationMessage(`Successfully logged in to MeerkatIO`, ["Configure Notifications"]).then((selection) => {
+			bottomPanelProvider.updateHtml();
+            vscode.window.showInformationMessage(`Successfully logged in to MeerkatIO`, "Configure Notifications").then((selection) => {
 				if (selection === 'Configure Notifications') {
 					// Open the extension's settings
-					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkatio');
+					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkat');
 				}
 			});
         }
     }));
-
-	ExtensionContext.setExtensionContext(context);
 
 	// Authentication + Account Configuration
 	let authenticated = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN)
@@ -346,7 +345,6 @@ async function activate(context) {
 			});
 		else
 			vscode.window.showInformationMessage('MeerkatIO - your notification manager - is now active!', "Log In to MeerkatIO Pro with GitHub").then((selection) => {
-				console.log(selection);
 				if (selection === 'Log In to MeerkatIO Pro with GitHub') {
 					// Run login command
 					vscode.commands.executeCommand("meerkat.login");

@@ -1,5 +1,4 @@
 const vscode = require("vscode");
-const moment = require('moment');
 
 const Constants = require('./constants');
 const ExtensionContext = require('./extensionContext');
@@ -61,29 +60,38 @@ class SideBarProvider {
     _getAccountOption() {
         const context = ExtensionContext.getExtensionContext();
 	    const token = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN);
-	
+        const account_type = context.globalState.get(Constants.ACCOUNT_TYPE, "free");
+        const account_valid = context.globalState.get(Constants.ACCOUNT_VALID, true);
+        const account_email = context.globalState.get(Constants.ACCOUNT_EMAIL, "");
+
+        let subscribeButton = `<a style="text-decoration: none;" href="https://buy.stripe.com/5kAcPD5627OO3OoeUV?prefilled_email=${encodeURIComponent(account_email)}"><button id="subscribeButton" style="margin: 0 auto; margin-top: 10px; color: white; background-color: green; border-radius: 4px; padding: 5px; width: 100%;">Subscribe to Pro</button></a>`
+
         if (!token) {
             return `
-                <button id="startFreeTrialButton" style="margin: 0 auto; margin-top: 10px; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Start Free Trial</button>
+                <p>Ping and System notifications are always free and accessible to everyone!</p> 
+                <p>MeerkatIO accounts unlock Slack, Teams, Google Chat, SMS, and Email notification channels - free for the first month!</p>
+            
+                <button id="startFreeTrialButton" style="margin: 0 auto; margin-top: 10px; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Start Pro Trial</button>
                 <p><a href="https://meerkatio.com/login">Or sign in</a> and add your token to the workspace if you already have a MeerkatIO Pro account</p>
                 `
         } else {
-            return `
-                <p>Looks like you have your MeerkatIO token set, thank you for using MeerkatIO Pro!</p>
-                <p>Make sure to <a style="text-decoration: none;" href="https://meerkatio.com/account">upgrade your account</a> so your notifications keep coming.</p>
-            `
-        }
-    }
-
-    _getDurationSaved() {
-        let context = ExtensionContext.getExtensionContext();
-        let timeSaved = context.globalState.get(Constants.NOTIF_TOTAL_DURATION_KEY);
-
-        if (timeSaved) {
-            let momentDuration = moment.duration(timeSaved);
-	        return "<h2>" + capitalizeEachWord(momentDuration.humanize()) + "<br> Re-claimed to Date!</h2><hr />";
-        } else {
-            return "<br>";
+            if (account_type == "free") {
+                return `
+                    <p>Looks like you have your MeerkatIO token all set. Enjoy your free trial!</p>
+                    ${subscribeButton}
+                `
+            } else if (!account_valid) {
+                return `
+                    <p>Your MeerkatIO Pro account has expired. Renew your account today to re-gain access!</p>
+                    ${subscribeButton}
+                `
+            } 
+            else {
+                return `
+                    <p>Looks like you have your MeerkatIO token all set. Thank you for using MeerkatIO Pro!</p>
+                `
+            }
+            
         }
     }
 
@@ -103,8 +111,6 @@ class SideBarProvider {
                 <p>The personal notification tool for software developers and data scientists that <strong>fits your workflow</strong>.</p>
                 <hr />
 
-                ${this._getDurationSaved()}
-
                 <h2>Quick Actions</h2>
 
                 <div>
@@ -114,8 +120,6 @@ class SideBarProvider {
 
                 <hr />
                 <h2>Account Management</h2>
-                <p>Ping and System notifications are always free and accessible to everyone!</p> 
-                <p>MeerkatIO accounts unlock Slack, Teams, Google Chat, SMS, and Email notification channels - free for the first month!</p>
                 
                 ${this._getAccountOption()}
                 
@@ -175,9 +179,5 @@ function getNonce() {
     }
     return text;
 }
-
-function capitalizeEachWord(str) {
-    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  }
 
 module.exports = SideBarProvider;

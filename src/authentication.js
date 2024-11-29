@@ -5,10 +5,6 @@ const Constants = require('./constants');
 module.exports.meerkatAuthenticate = async function () {
     let context = getExtensionContext();
 
-    if (vscode.workspace.getConfiguration('meerkat').get('token') | context.globalState.get(Constants.MEERKATIO_TOKEN))
-        // No need to authenticate if token is set already
-        return true;
-
     let authenticated = false;
     try {
         // Request authentication for GitHub. You could also use 'microsoft'
@@ -33,11 +29,25 @@ module.exports.meerkatAuthenticate = async function () {
             if (response.ok) {
                 let data = await response.json();
                 let token = data.token;
-                if (token) {
+                let token_valid = data.token_valid;
+                let account_type = data.account_type;
+                let email = data.email;
+
+                context.globalState.update(Constants.ACCOUNT_TYPE, account_type);
+                context.globalState.update(Constants.ACCOUNT_VALID, token_valid);
+                context.globalState.update(Constants.ACCOUNT_EMAIL, email);
+                context.globalState.update(Constants.MEERKATIO_TOKEN, token);
+                
+                if (token && token_valid) {
                     authenticated = true;
-                    context.globalState.update(Constants.MEERKATIO_TOKEN, token);
-                    setExtensionContext(context);
+                } else if (token && !token_valid) {
+                    vscode.window.showErrorMessage(`Your MeerkatIO free trial has expired. To continue using MeerkatIO Pro features, add a Pro Subscription today!`, "Get MeerkatIO Pro").then((selection) => {
+                        if (selection === 'Get MeerkatIO Pro') {
+                            vscode.env.openExternal("https://meerkatio.com/account#subscription");
+                        }
+                    });
                 }
+                setExtensionContext(context);
             } else {
                 const errorText = await response.text();
                 vscode.window.showErrorMessage(`Failed to create MeerkatIO account.`);
@@ -50,4 +60,30 @@ module.exports.meerkatAuthenticate = async function () {
         vscode.window.showErrorMessage("Authentication error. MeerkatIO login failed.");
     }
     return authenticated;
+}
+
+module.exports.checkMeerkatAccount = async function () {
+    let context = getExtensionContext();
+    const token = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN);
+
+    if (!token)
+        return;
+
+    const response = await fetch('https://meerkatio.com/api/user/info', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token })
+    });
+    if (response.ok) {
+        let data = await response.json();
+        let account_type = data.account_type;
+        let token_valid = data.token_valid;
+        let email = data.email;
+
+        context.globalState.update(Constants.ACCOUNT_TYPE, account_type);
+        context.globalState.update(Constants.ACCOUNT_VALID, token_valid);
+        context.globalState.update(Constants.ACCOUNT_EMAIL, email);
+    }
 }

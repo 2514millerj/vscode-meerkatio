@@ -6,32 +6,26 @@ module.exports.NotificationMonitor = class {
         this.message = message;
         this.trigger = trigger;
         this.startDatetime = startDatetime;
+        this.endDatetime = null;
 
         this.uuid = crypto.randomUUID();
     }
 
+    // Set the endDatetime
+    setEndDatetime(endDatetime) {
+        this.endDatetime = endDatetime;
+    }
+
+    // Calculate the duration based on startDatetime and endDatetime
     get duration() {
-        return new Date() - this.startDatetime;
+        if (this.endDatetime) {
+            return new Date(this.endDatetime) - new Date(this.startDatetime);
+        }
+        return new Date() - new Date(this.startDatetime); // Fallback if endDatetime isn't set
     }
 }
 
 module.exports.logNotificationHistory = function (nm, context) {
-    let notificationCount = context.globalState.get(Constants.NOTIF_COUNT_KEY);
-    if (notificationCount) {
-        let newCount = notificationCount + 1;
-        context.globalState.update(Constants.NOTIF_COUNT_KEY, newCount);
-    } else {
-        context.globalState.update(Constants.NOTIF_COUNT_KEY, 1);
-    }
-
-    let timeSaved = context.globalState.get(Constants.NOTIF_TOTAL_DURATION_KEY);
-    if (timeSaved) {
-        let newCount = timeSaved + nm.duration;
-        context.globalState.update(Constants.NOTIF_TOTAL_DURATION_KEY, newCount);
-    } else {
-        context.globalState.update(Constants.NOTIF_TOTAL_DURATION_KEY, nm.duration);
-    }
-
     let notifHistory = context.globalState.get(Constants.NOTIF_HISTORY);
     if (notifHistory) {
         notifHistory.push(nm);

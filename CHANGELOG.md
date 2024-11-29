@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.9.0]
+
+- New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.
+
 ## [1.8.0]
 
 - Added Google Chat notifications integration. 
