@@ -2,6 +2,11 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.10.0]
+
+- Added VS Code Walkthrough steps with guides on configuring notification channels, trigger duration, and notification history tools. 
+- Improved notification configuration in the MeerkatIO sidebar menu.
+
 ## [1.9.0]
 
 - New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.

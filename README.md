@@ -2,6 +2,8 @@
 
 [MeerkatIO](https://meerkatio.com) is the personal notification tool that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips including Jupyter, Terminal, Run+Debug, and VS Code Tasks.
 
+![MeerkatIO Screenshot](./images/meerkatio-overview.png)
+
 ## Available Integrations
 
 - Terminal command monitoring for Mac, Windows, and Linux! MeerkatIO keeps track of all running terminal processes inside of VS Code and alerts you when a process completes according to your workspace settings.
@@ -89,6 +91,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.10.0
+
+Added VS Code Walkthrough steps with guides on configuring notification channels, trigger duration, and notification history tools. Improved notification configuration in the MeerkatIO sidebar menu.
+
 ### 1.9.0
 
 New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.
@@ -100,14 +106,6 @@ Added Google Chat notifications integration. Improved sign in experience using V
 ### 1.7.0
 
 Added Microsoft Teams notifications integration
-
-### 1.6.2
-
-Save notification task duration and trigger for future analysis/reporting
-
-### 1.6.1
-
-Fix bug with undefined package in some environments
 
 
 **Thank you for your support!**

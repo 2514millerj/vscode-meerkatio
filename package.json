@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -11,10 +11,10 @@
     "workspace"
   ],
   "categories": [
+    "Notebooks",
     "Data Science",
     "Other",
-    "Machine Learning",
-    "Notebooks"
+    "Machine Learning"    
   ],
   "keywords": [
     "alert",
@@ -24,11 +24,11 @@
     "debug",
     "remote work",
     "productivity",
-    "slack",
+    "Slack",
     "Microsoft Teams",
     "Google Chat",
-    "sms",
-    "email",
+    "SMS",
+    "Email",
     "system tray",
     "push notification",
     "jupyter",
@@ -50,10 +50,61 @@
   },
   "main": "./src/extension.js",
   "contributes": {
+    "walkthroughs": [
+      {
+        "id": "meerkatio.getStarted",
+        "title": "Get Started with MeerkatIO",
+        "description": "Start reclaiming time in your day and set up MeerkatIO to step away from your computer with confidence.",
+        "steps": [
+          {
+            "id": "get-started-free",
+            "title": "Welcome to MeerkatIO",
+            "description": "Thank you for installing MeerkatIO, your personal notification tool! ",
+            "media": {
+							"markdown": "walkthroughs/free-welcome.md"
+						}
+          },
+          {
+						"id": "configure-notification-channel",
+						"title": "Set Your Notification Channel",
+						"description": "The MeerkatIO extension makes it simple to change notification channels to fit your workflow. \n\n[Set Your Notification Channel](command:meerkat.setNotificationChannel)",
+						"media": {
+							"markdown": "walkthroughs/configure-notification-channel.md"
+						}
+					},
+          {
+						"id": "configure-notification-trigger",
+						"title": "Configure Execution Duration",
+						"description": "Noisy alerts get ignored, configure your alert trigger duration to make the most out of your notifications. \n\n[Configure Trigger](command:meerkat.setExecutionTriggerDuration)",
+						"media": {
+							"markdown": "walkthroughs/configure-notification-trigger.md"
+						}
+					},
+          {
+						"id": "track-execution-history",
+						"title": "Track Your Execution History",
+						"description": "Wondering how much time your processes take out of your day? Get a full execution history and useful summary metrics of your notifications in VS Code! \n\n[Go To Notification History](command:meerkat.openNotificationHistory)",
+						"media": {
+							"markdown": "walkthroughs/track-execution-history.md"
+						}
+					}
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "meerkat.login",
         "title": "MeerkatIO: Login"
+      },
+      {
+        "command": "meerkat.openNotificationHistory",
+        "title": "MeerkatIO: Open Notification History"
+      }, {
+        "command": "meerkat.setNotificationChannel",
+        "title": "MeerkatIO: Set Notification Channel"
+      }, {
+        "command": "meerkat.setExecutionTriggerDuration",
+        "title": "MeerkatIO: Set Execution Trigger Duration"
       }
     ],
     "configuration": {

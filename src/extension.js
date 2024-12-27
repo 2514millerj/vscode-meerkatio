@@ -255,7 +255,11 @@ async function activate(context) {
 	);
 
 	// Get User Info
-	await checkMeerkatAccount();
+	try{
+		await checkMeerkatAccount();
+	} catch(e) {
+		console.log(e);
+	}
 	sideBarProvider.updateHtml();
 	bottomPanelProvider.updateHtml();
 
@@ -327,7 +331,7 @@ async function activate(context) {
             vscode.window.showInformationMessage(`Successfully logged in to MeerkatIO`, "Configure Notifications").then((selection) => {
 				if (selection === 'Configure Notifications') {
 					// Open the extension's settings
-					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkat');
+					vscode.commands.executeCommand('meerkat.setNotificationChannel');
 				}
 			});
         }
@@ -340,7 +344,7 @@ async function activate(context) {
 			vscode.window.showInformationMessage('MeerkatIO - your notification manager - has enabled your Pro account!', "Configure Notifications").then((selection) => {
 				if (selection === 'Configure Notifications') {
 					// Open the extension's settings
-					vscode.commands.executeCommand('workbench.action.openSettings', 'meerkat');
+					vscode.commands.executeCommand('meerkat.setNotificationChannel');
 				}
 			});
 		else
@@ -350,6 +354,19 @@ async function activate(context) {
 					vscode.commands.executeCommand("meerkat.login");
 				}
 			});
+
+	/*
+	 * Walkthrough Commands
+	 */
+	context.subscriptions.push(vscode.commands.registerCommand('meerkat.openNotificationHistory', async () => {
+        vscode.commands.executeCommand('workbench.view.extension.meerkat-bottom-panel-view');
+    }));
+	context.subscriptions.push(vscode.commands.registerCommand('meerkat.setNotificationChannel', async () => {
+        vscode.commands.executeCommand('workbench.view.extension.meerkat-sidebar-view');
+    }));
+	context.subscriptions.push(vscode.commands.registerCommand('meerkat.setExecutionTriggerDuration', async () => {
+        vscode.commands.executeCommand('workbench.view.extension.meerkat-sidebar-view');
+    }));
 }
 
 // This method is called when your extension is deactivated
