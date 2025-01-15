@@ -5,6 +5,7 @@ var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
 const psList = require('ps-list');
 const moment = require('moment');
+const os = require('os');
 
 // Module Imports
 const SideBarProvider = require('./SideBarProvider');
@@ -13,6 +14,7 @@ const BottomPanelProvider = require('./BottomPanelProvider');
 let bottomPanelProvider = new BottomPanelProvider();
 
 const checkSurveyTrigger = require('./surveyPrompt');
+const wrapText = require('./utils');
 
 const NotificationHistory = require('./notificationHistory');
 const logNotificationHistory = NotificationHistory.logNotificationHistory;
@@ -101,11 +103,16 @@ function sendMeerkatNotification(method, message, duration_ms, trigger) {
 }
 
 //return boolean sent true/false
-function handleMeerkatNotification(message, time_diff, trigger) {
+function handleMeerkatNotification(notification) {
 	const meerkatioNotification = vscode.workspace.getConfiguration('meerkat').get('meerkatNotification', 'ping');
 
-	let moment_duration = moment.duration(time_diff);
-	let humaized_duration = moment_duration.humanize();
+	let momentDuration = moment.duration(notification.duration);
+	let humaizedDuration = momentDuration.humanize();
+
+	let context = ExtensionContext.getExtensionContext();
+	const accountEmail = context.globalState.get(Constants.ACCOUNT_EMAIL, "");
+	const accountValid = context.globalState.get(Constants.ACCOUNT_VALID, true);
+	let isProUser = accountEmail && accountValid;
 	
 	if (meerkatioNotification === 'ping') {
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
@@ -113,38 +120,42 @@ function handleMeerkatNotification(message, time_diff, trigger) {
 				vscode.window.showErrorMessage("MeerkatIO: Failed to access audio device for Ping notification");
 			}
 		});
-		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaized_duration}): ` + message);
+		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaizedDuration}): ` + notification.message, "Summarize Task Output").then(async (selection) => {
+			if (selection === 'Summarize Task Output') {
+				vscode.commands.executeCommand('meerkat.analyzeLastNotificationOutput', [notification]);
+			}
+		});
 	
-		sendMeerkatLocal('ping', time_diff, trigger);
+		sendMeerkatLocal('ping', notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'system') {
 		nc.notify({
 			title: 'MeerkatIO Alert',
-			message: message,
+			message: notification.message,
 			icon: extensionPath + "/images/logo-transparent.png"
 		}, function (err, response) {
 			if (err !== null) {
 				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);
 			}
 		});
-		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaized_duration}): ` + message);
+		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaizedDuration}): ` + notification.message);
 	
-		sendMeerkatLocal('system', time_diff, trigger);
+		sendMeerkatLocal('system', notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'slack') {
-		sendMeerkatNotification('slack', message, time_diff, trigger);
+		sendMeerkatNotification('slack', notification.message, notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'teams') {
-		sendMeerkatNotification('teams', message, time_diff, trigger);
+		sendMeerkatNotification('teams', notification.message, notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'google_chat') {
-		sendMeerkatNotification('google_chat', message, time_diff, trigger);
+		sendMeerkatNotification('google_chat', notification.message, notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'sms') {
-		sendMeerkatNotification('sms', message, time_diff, trigger);
+		sendMeerkatNotification('sms', notification.message, notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'email') {
-		sendMeerkatNotification('email', message, time_diff, trigger);
+		sendMeerkatNotification('email', notification.message, notification.duration, notification.trigger);
 	}
 }
 
@@ -165,7 +176,7 @@ async function notebookWatcher(context) {
 				kernelMonitor.setEndDatetime(endTime);
 
 				if (isValidNotification(kernelMonitor.duration)) {
-					handleMeerkatNotification(kernelMonitor.message, kernelMonitor.duration, "jupyter");
+					handleMeerkatNotification(kernelMonitor);
 					logNotificationHistory(kernelMonitor, context);
 					checkSurveyTrigger(context);
 				}
@@ -180,7 +191,7 @@ async function notebookWatcher(context) {
  * Terminal Watcher
  */
 
-async function terminalHandler(pid, context) {
+async function terminalHandler(pid, context, terminalName) {
 	let childPIDs = new Map();
 	while (activePIDs.includes(pid)) {
 		//get child PIDs
@@ -201,12 +212,13 @@ async function terminalHandler(pid, context) {
 			if (!PIDList.includes(childPID)) {
 				let terminalCommand = childPIDs.get(childPID).command;
 				const message = `Terminal Process Completed${terminalCommand ? ": " + terminalCommand : ""}`;
-				const time_diff = new Date() - childPIDs.get(childPID).timestamp;
-				let nm = new NotificationMonitor(message, "terminal", childPIDs.get(childPID).timestamp);
-				nm.setEndDatetime(new Date());
-				if (isValidNotification(nm.duration)) {
-					handleMeerkatNotification(message, time_diff, "terminal");
-					logNotificationHistory(nm, context);
+				let terminalMonitor = new NotificationMonitor(message, "terminal", childPIDs.get(childPID).timestamp);
+				terminalMonitor.setEndDatetime(new Date());
+				if (isValidNotification(terminalMonitor.duration)) {
+					terminalMonitor.id = terminalName;
+					
+					handleMeerkatNotification(terminalMonitor);
+					logNotificationHistory(terminalMonitor, context);
 					checkSurveyTrigger(context);
 				}
 				sideBarProvider.updateHtml();
@@ -224,7 +236,7 @@ async function terminalWatcher(terminal, context) {
 		let pid = await terminal.processId;
 		if(!activePIDs.includes(pid)) {
 			activePIDs.push(pid);
-			terminalHandler(pid, context);
+			terminalHandler(pid, context, terminal.name);
 		}
 	} else {
 		// no active terminal defined, remove all active PIDs
@@ -275,7 +287,7 @@ async function activate(context) {
 			debugMonitor.message = `Run (${e.type}) Completed: ${e.name}`;
 			debugMonitor.setEndDatetime(new Date());
 			if (isValidNotification(debugMonitor.duration)) {
-				handleMeerkatNotification(debugMonitor.message, debugMonitor.duration, debugMonitor.trigger);
+				handleMeerkatNotification(debugMonitor);
 				logNotificationHistory(debugMonitor, context);
 				checkSurveyTrigger(context);
 			}
@@ -295,7 +307,7 @@ async function activate(context) {
 		taskMonitor.message = `Task (${e.execution.task.source}) completed: ${e.execution.task.name}`;		
 		taskMonitor.setEndDatetime(new Date());
 		if (isValidNotification(taskMonitor.duration)) {
-			handleMeerkatNotification(taskMonitor.message, taskMonitor.duration, taskMonitor.trigger);
+			handleMeerkatNotification(taskMonitor);
 			logNotificationHistory(taskMonitor, context);
 			checkSurveyTrigger(context);
 		}
@@ -367,6 +379,76 @@ async function activate(context) {
 	context.subscriptions.push(vscode.commands.registerCommand('meerkat.setExecutionTriggerDuration', async () => {
         vscode.commands.executeCommand('workbench.view.extension.meerkat-sidebar-view');
     }));
+
+	context.subscriptions.push(vscode.commands.registerCommand('meerkat.analyzeLastNotificationOutput', async (notifications) => {
+        const notification = notifications[0];
+		const models = await vscode.lm.selectChatModels();
+		let model = undefined;
+		if (models && models.length > 0) {
+			model = models[0];
+		} else {
+			vscode.window.showErrorMessage("MeerkatIO: AI Model not found. Please configure your VS Code AI.")
+			return;
+		}
+
+		let output = "";
+		if (notification.trigger === "terminal") {
+			// Capture terminal output
+			const terminals = vscode.window.terminals;
+			const completedTerminal = terminals.find(t => t.name === notification.id);
+			if (completedTerminal) {
+				completedTerminal.show();
+			}
+
+			await vscode.commands.executeCommand('workbench.action.terminal.selectAll');
+			await vscode.commands.executeCommand('workbench.action.terminal.copySelection');
+	
+			// Wait a bit for clipboard operation
+			await new Promise(resolve => setTimeout(resolve, 100));
+	
+			output = await vscode.env.clipboard.readText();
+
+			// Clear selection
+			await vscode.commands.executeCommand('workbench.action.terminal.clearSelection');
+		}
+
+		if (!output) {
+			vscode.window.showErrorMessage("MeerkatIO: No task output to summarize.")
+			return;
+		}
+
+		const messages = [
+			vscode.LanguageModelChatMessage
+				.User(`You are a helpful senior engineer. Your job is to analyze output from a program and provide insight into what the output means in a simple and concise message. The goal of your response is to save the developer time in understanding what happened after program execution.`),
+			vscode.LanguageModelChatMessage.User(output.length > model.maxInputTokens ? output.slice(0, model.maxInputTokens) : output)
+		];
+
+		try {
+			let chatResponse = await model.sendRequest(
+				messages,
+				{},
+				new vscode.CancellationTokenSource().token
+			);
+
+			let response = "==================\n";
+			response += notification.message;
+			response += "\n==================\n\nTask Output Summary:\n\n";
+			for await (const fragment of chatResponse.text) {
+				response += fragment;
+			}
+			// Create a new untitled document
+			const document = await vscode.workspace.openTextDocument({
+				content: wrapText(response, 80),
+				language: 'plaintext' // You can specify the language mode here
+			});
+			
+			// Show the document in the editor
+			await vscode.window.showTextDocument(document);
+		} catch (err) {
+			console.log(err);
+			vscode.window.showErrorMessage("MeerkatIO: Failed to generate AI output.")
+		}
+    }));	  
 }
 
 // This method is called when your extension is deactivated
