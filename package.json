@@ -3,7 +3,7 @@
   "publisher": "MeerkatIO",
   "displayName": "MeerkatIO: Personal Notification Tool",
   "description": "Personal notification tool for multi-tasking software developers",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -14,7 +14,8 @@
     "Notebooks",
     "Data Science",
     "Other",
-    "Machine Learning"    
+    "Machine Learning",
+    "AI"
   ],
   "keywords": [
     "alert",
@@ -34,7 +35,9 @@
     "jupyter",
     "notebook",
     "terminal",
-    "command prompt"
+    "command prompt",
+    "AI summary",
+    "log processing"
   ],
   "activationEvents": [
     "*"
@@ -105,6 +108,9 @@
       }, {
         "command": "meerkat.setExecutionTriggerDuration",
         "title": "MeerkatIO: Set Execution Trigger Duration"
+      }, {
+        "command": "meerkat.analyzeLastNotificationOutput",
+        "title": "Summarize Last Notification Output"
       }
     ],
     "configuration": {

@@ -2,6 +2,11 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.11.0]
+
+- New Pro Feature: Summarize task output using the VS Code AI integration. Allows users to quickly analyze the output of their long running tasks to save valuable dev time and accelerate debugging to improve productivity.
+- Improved error handling and messaging with the MeerkatIO platform
+
 ## [1.10.0]
 
 - Added VS Code Walkthrough steps with guides on configuring notification channels, trigger duration, and notification history tools. 

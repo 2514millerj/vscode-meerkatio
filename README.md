@@ -1,15 +1,15 @@
 # MeerkatIO - Your Personal Notification Tool
 
-[MeerkatIO](https://meerkatio.com) is the personal notification tool that fits your workflow. This one extension immediately opens the door to any notification method you need to save time in your day, integrating with all of the built in tools already at your fingertips including Jupyter, Terminal, Run+Debug, and VS Code Tasks.
+[MeerkatIO](https://meerkatio.com) is the personal notification tool that fits your workflow. This one extension immediately opens the door to any notification method you need to stop watching your code run and save time in your day. MeerkatIO integrates with all of the built in tools already at your fingertips including Jupyter, Terminal, Run+Debug, VS Code Tasks, and Copilot.
 
 ![MeerkatIO Screenshot](./images/meerkatio-overview.png)
 
 ## Available Integrations
-
 - Terminal command monitoring for Mac, Windows, and Linux! MeerkatIO keeps track of all running terminal processes inside of VS Code and alerts you when a process completes according to your workspace settings.
 - Jupyter Extension support out of the box. Just run your cell(s) like normal and MeerkatIO will keep an eye out and alert you when your code completes.
 - VS Code Run and Debug monitoring. Alert yourself after long-running processes complete from VS Code's built in Run and Debug Tool.
 - VS Code Task monitoring. Monitor long running tasks defined in `.vscode/launch.json` without any extra configuration.
+- VS Code AI Copilot integration for summarizing and analyzing task output
 
 ## Available Notification Channels
 
@@ -23,11 +23,11 @@ The MeerkatIO VS Code Extension supports the following notification channels:
 - Email
 
 ## Use Cases
-
 - Ping yourself when your terminal command completes
 - Send your phone an SMS text message when your long running Jupyter Notebook cell completes
 - Generate a system notification when your test suite completes while you have a different window open
 - Slack yourself an update on your build pipeline while you are taking your dog for a walk so you know when to head back
+- Quickly summarize long running task output using your personal AI setup
 
 ## Quickstart
 No setup is required to use the Ping or System commands with this extension, but in order to access Slack, Microsoft Teams, Google Chat, SMS, and Email notification channels a MeerkatIO account is required. [Get started for free today!](https://meerkatio.com/register)
@@ -37,9 +37,16 @@ MeerkatIO notifications will automatically (after a window reload) execute for a
 ## Additional Pro Features!
 
 ### 📜 Notification History
-
     - Easily access your execution history to review detailed records of past executions. 
     - Quickly find out how long an execution took and conveniently copy the execution details for further use.
+
+![MeerkatIO Screenshot](./walkthroughs/thumbnails/notification-history.png)
+
+### 🔍 Summarize Task Output
+    - Save valuable dev time by getting instant, AI-powered summaries of your build logs, test results, and task outputs - no more scrolling through walls of text to find what matters.
+    - Accelerate your debugging workflow by quickly understanding what went wrong without having to parse through lengthy console logs manually - get straight to problem-solving
+
+![MeerkatIO AI Output Summary](./images/summarize.png)
 
 ## Extension Settings
 After creating your account, set the following Extension Settings to unlock the full MeerkatIO Platform command set:
@@ -57,12 +64,10 @@ After creating your account, set the following Extension Settings to unlock the 
 * `meerkat.triggerMinDurationSeconds`: The minimum duration in seconds code must run to cause an alert to be triggered. This avoids noisy alerts on short tasks.
 
 ## Tips For Success
-
-- Be sure to configure the `triggerMinDurationSeconds` to match your workflow. Noisy alerts get ignored, so customize this setting to improve your personal workflow.
-- Use the MeerkatIO sidebar to easily toggle notifications on and off as you need them
+- Be sure to configure notification duration in the MeerkatIO sidebar to match your workflow. Noisy alerts get ignored, so customize this setting to improve your personal workflow.
+- Use the MeerkatIO sidebar to easily toggle notifications on and off as you need them and quickly change the notification method
 
 ### System Notifications
-
 - On macOS make sure you have notifications enabled for `terminal-notifier` in order to have notifications show up in your system's notification center
 
 ![MeerkatIO System Notification MacOS Permissions Example](./images/terminal-notifier-permissions.png)
@@ -87,9 +92,13 @@ After creating your account, set the following Extension Settings to unlock the 
 ```
 
 ## Telemetry
-The MeerkatIO extension collects telemetry data to help build a better VS Code experience. This extension does not send any telemetry from notification trigger sources including commands, paths, files, or personally identifiable information. The extension respects the telemetry.enableTelemetry setting which you can learn more about in the [Visual Studio Code FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+The MeerkatIO extension collects telemetry data to help build a better VS Code experience. This extension does not send any telemetry from notification trigger sources including commands, paths, output, files, or personally identifiable information. The extension respects the telemetry.enableTelemetry setting which you can learn more about in the [Visual Studio Code FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Release Notes
+
+### 1.11.0
+
+New Pro Feature: Summarize task output using the VS Code AI integration. Allows users to quickly analyze the output of their long running tasks to save valuable dev time and accelerate debugging to improve productivity.
 
 ### 1.10.0
 
@@ -102,10 +111,6 @@ New Pro feature: MeerkatIO Notification History in the bottom panel allows users
 ### 1.8.0
 
 Added Google Chat notifications integration. Improved sign in experience using VS Code authentication sessions with GitHub.
-
-### 1.7.0
-
-Added Microsoft Teams notifications integration
 
 
 **Thank you for your support!**

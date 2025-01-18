@@ -3,10 +3,12 @@ const Constants = require('./constants');
 
 module.exports.NotificationMonitor = class {
     constructor(message, trigger, startDatetime) {
+        this.id = null;
         this.message = message;
         this.trigger = trigger;
         this.startDatetime = startDatetime;
         this.endDatetime = null;
+        this.output = "";
 
         this.uuid = crypto.randomUUID();
     }
@@ -14,6 +16,10 @@ module.exports.NotificationMonitor = class {
     // Set the endDatetime
     setEndDatetime(endDatetime) {
         this.endDatetime = endDatetime;
+    }
+
+    setOutput(output) {
+        this.output = output;
     }
 
     // Calculate the duration based on startDatetime and endDatetime

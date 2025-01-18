@@ -5,7 +5,6 @@ var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
 const psList = require('ps-list');
 const moment = require('moment');
-const os = require('os');
 
 // Module Imports
 const SideBarProvider = require('./SideBarProvider');
@@ -41,6 +40,25 @@ function isValidNotification(durationMs) {
 	}
 }
 
+function handleSummarizeTaskButton(notification) {
+	let context = ExtensionContext.getExtensionContext();
+	const accountEmail = context.globalState.get(Constants.ACCOUNT_EMAIL, "");
+	const accountValid = context.globalState.get(Constants.ACCOUNT_VALID, true);
+	let isProUser = accountEmail && accountValid;
+	const stripeURL = "https://buy.stripe.com/5kAcPD5627OO3OoeUV?prefilled_email=" + encodeURIComponent(accountEmail);
+	
+	if (isProUser) {
+		vscode.commands.executeCommand('meerkat.analyzeLastNotificationOutput', [notification]);
+	} else {
+		vscode.window.showErrorMessage("MeerkatIO: Pro account required to summarize task output.", "Upgrade to MeerkatIO Pro").then((selection) => {
+			if (accountEmail)
+				vscode.env.openExternal(stripeURL);
+			else
+				vscode.commands.executeCommand("meerkat.login");
+		});
+	}
+}
+
 function sendMeerkatLocal(method, time_diff, trigger) {
 	if (!vscode.env.isTelemetryEnabled) {
 		return;
@@ -66,8 +84,12 @@ function sendMeerkatLocal(method, time_diff, trigger) {
 	});
 }
 
-function sendMeerkatNotification(method, message, duration_ms, trigger) {
-    const url = 'https://meerkatio.com/api/notification/send';
+function sendMeerkatNotification(method, notification) {
+	const message = notification.message;
+	const duration_ms = notification.duration;
+	const trigger = notification.trigger;
+	
+	const url = 'https://meerkatio.com/api/notification/send';
 
 	const context = ExtensionContext.getExtensionContext();
 	const token = vscode.workspace.getConfiguration('meerkat').get('token') || context.globalState.get(Constants.MEERKATIO_TOKEN);
@@ -90,15 +112,36 @@ function sendMeerkatNotification(method, message, duration_ms, trigger) {
             'Content-Type': 'application/json'
         }
     }).then(response => {
-		if (response.status === 200)
-			//TODO: save account type from response
-			vscode.window.showInformationMessage("MeerkatIO: " + message);
-		else
-			vscode.window.showErrorMessage("MeerkatIO: " + response.data.error);
+		if (response.status === 200) {
+			vscode.window.showInformationMessage("MeerkatIO: " + message, "Summarize Task Output").then((selection) => {
+				if (selection === "Summarize Task Output") 
+					handleSummarizeTaskButton(notification)
+			});
+
+			let context = ExtensionContext.getExtensionContext();
+			let accountType = response.data.accountType;
+			context.globalState.update(Constants.ACCOUNT_TYPE, accountType);
+		}
 	})
 	.catch(error => {
-		console.log(error);
-		vscode.window.showErrorMessage('Error contacting MeerkatIO Platform');
+		if (axios.isAxiosError(error) && error.response?.status === 400) {
+			let errorMessage = error.response.data.error ? error.response.data.error : "Failed to send notification";
+			if (errorMessage.includes("Upgrade")) {
+				vscode.window.showErrorMessage("MeerkatIO: " + errorMessage, "Upgrade to MeerkatIO Pro").then((selection) => {
+					if (selection === "Upgrade to MeerkatIO Pro") {
+						let context = ExtensionContext.getExtensionContext();
+						const accountEmail = context.globalState.get(Constants.ACCOUNT_EMAIL, "");
+						const stripeURL = "https://buy.stripe.com/5kAcPD5627OO3OoeUV?prefilled_email=" + encodeURIComponent(accountEmail);
+
+						vscode.env.openExternal(stripeURL);
+					}
+				});
+			} else {
+				vscode.window.showErrorMessage("MeerkatIO: " + errorMessage);
+			}
+		  } else {
+			vscode.window.showErrorMessage('Error contacting MeerkatIO Platform');
+		  }
 	});
 }
 
@@ -109,21 +152,15 @@ function handleMeerkatNotification(notification) {
 	let momentDuration = moment.duration(notification.duration);
 	let humaizedDuration = momentDuration.humanize();
 
-	let context = ExtensionContext.getExtensionContext();
-	const accountEmail = context.globalState.get(Constants.ACCOUNT_EMAIL, "");
-	const accountValid = context.globalState.get(Constants.ACCOUNT_VALID, true);
-	let isProUser = accountEmail && accountValid;
-	
 	if (meerkatioNotification === 'ping') {
 		player.play(extensionPath + '/audio/default_ping.mp3', function(err){
 			if (err) {
 				vscode.window.showErrorMessage("MeerkatIO: Failed to access audio device for Ping notification");
 			}
 		});
-		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaizedDuration}): ` + notification.message, "Summarize Task Output").then(async (selection) => {
-			if (selection === 'Summarize Task Output') {
-				vscode.commands.executeCommand('meerkat.analyzeLastNotificationOutput', [notification]);
-			}
+		vscode.window.showInformationMessage(`MeerkatIO: Ping Notification (${humaizedDuration}): ` + notification.message, "Summarize Task Output").then((selection) => {
+			if (selection === "Summarize Task Output") 
+				handleSummarizeTaskButton(notification)
 		});
 	
 		sendMeerkatLocal('ping', notification.duration, notification.trigger);
@@ -138,24 +175,27 @@ function handleMeerkatNotification(notification) {
 				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);
 			}
 		});
-		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaizedDuration}): ` + notification.message);
+		vscode.window.showInformationMessage(`MeerkatIO: System Notification (${humaizedDuration}): ` + notification.message, "Summarize Task Output").then((selection) => {
+			if (selection === "Summarize Task Output") 
+				handleSummarizeTaskButton(notification)
+		});
 	
 		sendMeerkatLocal('system', notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'slack') {
-		sendMeerkatNotification('slack', notification.message, notification.duration, notification.trigger);
+		sendMeerkatNotification('slack', notification);
 	}
 	else if (meerkatioNotification === 'teams') {
-		sendMeerkatNotification('teams', notification.message, notification.duration, notification.trigger);
+		sendMeerkatNotification('teams', notification);
 	}
 	else if (meerkatioNotification === 'google_chat') {
-		sendMeerkatNotification('google_chat', notification.message, notification.duration, notification.trigger);
+		sendMeerkatNotification('google_chat', notification);
 	}
 	else if (meerkatioNotification === 'sms') {
-		sendMeerkatNotification('sms', notification.message, notification.duration, notification.trigger);
+		sendMeerkatNotification('sms', notification);
 	}
 	else if (meerkatioNotification === 'email') {
-		sendMeerkatNotification('email', notification.message, notification.duration, notification.trigger);
+		sendMeerkatNotification('email', notification);
 	}
 }
 
@@ -174,6 +214,21 @@ async function notebookWatcher(context) {
 				let kernelMonitor = new NotificationMonitor(message, "jupyter", startTime);
 				kernelMonitor.uuid = event.notebook.uri.path;
 				kernelMonitor.setEndDatetime(endTime);
+
+				let output = "";
+				if (cell.cell.outputs && cell.cell.outputs.length > 0) {
+					// Process the outputs
+					cell.cell.outputs.forEach((cellOutput) => {
+					  if (cellOutput.items) {
+						cellOutput.items.forEach((item) => {
+						  const mime = item.mime; // The MIME type of the output
+						  const value = item.data.toString(); // Convert the data to string
+						  output += value;
+						});
+					  }
+					});
+				}
+				kernelMonitor.setOutput(output);
 
 				if (isValidNotification(kernelMonitor.duration)) {
 					handleMeerkatNotification(kernelMonitor);
@@ -410,6 +465,8 @@ async function activate(context) {
 
 			// Clear selection
 			await vscode.commands.executeCommand('workbench.action.terminal.clearSelection');
+		} else if (notification.trigger === "jupyter") {
+			output = notification.output;
 		}
 
 		if (!output) {

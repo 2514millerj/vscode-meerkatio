@@ -299,13 +299,22 @@ class SideBarProvider {
                         <div id="teams-webhook" class="webhook-container" style="display: none;">
                             <label for="teams-webhook-url">Microsoft Teams Webhook URL:</label>
                             <input type="url" id="teams-webhook-url" class="webhook-input" placeholder="https://example.webhook.url" value="${microsoftWebhook}" />
+                        
+                            <br />
+                            <a href="https://meerkatio.com/docs#teams">Teams Setup Guide</a>
                         </div>
                         <div id="google-chat-webhook" class="webhook-container" style="display: none;">
                             <label for="google-chat-webhook-url">Google Chat Webhook URL:</label>
                             <input type="url" id="google-chat-webhook-url" class="webhook-input" placeholder="https://example.webhook.url" value="${googleWebhook}" />
+                        
+                            <br />
+                            <a href="https://meerkatio.com/docs#google_chat">Google Chat Setup Guide</a>
                         </div>
                         <div id="slack-token" class="webhook-container" style="display: none;">
                             <a href="https://slack.com/oauth/v2/authorize?client_id=6908270676551.6916200280070&scope=chat:write&user_scope="><img height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" /></a>
+                        
+                            <br />
+                            <a href="https://meerkatio.com/docs#slack">Slack Setup Guide</a>
                         </div>
                         <div id="email" class="webhook-container" style="display: none;">
                             <label for="email-value">Email:</label>
@@ -362,8 +371,7 @@ class SideBarProvider {
                     const emailContainer = document.getElementById('email');
                     const phoneContainer = document.getElementById('sms');
 
-                    // Listen for changes in the select menu
-                    selectMenu.addEventListener('change', () => {
+                    function handleNotificationSelect() {
                         if (selectMenu.value === 'teams') {
                             teamsWebhookContainer.style.display = 'block';
                             vscode.postMessage('teams:selected');
@@ -406,7 +414,11 @@ class SideBarProvider {
                         if (selectMenu.value === 'system') {
                             vscode.postMessage('system:selected');
                         }
-                    });
+                    }
+                    handleNotificationSelect();
+
+                    // Listen for changes in the select menu
+                    selectMenu.addEventListener('change', handleNotificationSelect);
 
                     window.addEventListener('message', event => {
                         if (event.data === 'enabled') {
