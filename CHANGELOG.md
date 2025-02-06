@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.11.1]
+
+- Fix bug where Jupyter Notebook notifications were being triggered twice
+
 ## [1.11.0]
 
 - New Pro Feature: Summarize task output using the VS Code AI integration. Allows users to quickly analyze the output of their long running tasks to save valuable dev time and accelerate debugging to improve productivity.

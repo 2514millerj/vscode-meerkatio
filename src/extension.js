@@ -204,12 +204,19 @@ function handleMeerkatNotification(notification) {
  */
 
 async function notebookWatcher(context) {
+	var cellIDs = [];
 	vscode.workspace.onDidChangeNotebookDocument((event) => {
 		for(let cell of event.cellChanges) {
-			if (cell.executionSummary?.timing) {
+			if (cell.executionSummary?.timing !== undefined) {				
 				//Cell completed
 				let startTime = new Date(cell.executionSummary.timing.startTime);
 				let endTime = new Date(cell.executionSummary.timing.endTime);
+				
+				if (cellIDs.includes(cell.executionSummary.timing.startTime)) {
+					continue;
+				}
+				cellIDs.push(cell.executionSummary.timing.startTime);
+				
 				let message = `Cell #${cell.cell.index} in notebook ${event.notebook.uri.path.split("/").pop()} ${cell.executionSummary.success ? "Completed Successfully" : "Execution Failed"}`;
 				let kernelMonitor = new NotificationMonitor(message, "jupyter", startTime);
 				kernelMonitor.uuid = event.notebook.uri.path;
