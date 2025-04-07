@@ -1,7 +1,10 @@
 const vscode = require("vscode");
+const os = require('os');
 
 const Constants = require('./constants');
 const ExtensionContext = require('./extensionContext');
+
+const { getPersistentShell } = require('./utils');
 
 class SideBarProvider {
 
@@ -129,6 +132,13 @@ class SideBarProvider {
                             context.globalState.update(Constants.NOTIF_METHOD, "system");
                         }
                         break;
+                    case "setupNotificationsOnWindows":
+                        const shell = getPersistentShell('powershel.exe');
+                        shell.execCmd(`
+                            Start-Process -Verb RunAs -FilePath pwsh -ArgumentList 'reg.exe add HKCR\\${Constants.WINDOWS_APP_ID}','reg.exe add HKCR\\${Constants.WINDOWS_APP_ID} /v DisplayName /t REG_SZ /d "MeerkatIO VSCode"','reg.exe add HKCR\\${Constants.WINDOWS_APP_ID} /v IconUri /t REG_SZ /d "${context.extensionPath}\\images\\logo-transparent.png"','reg.exe add HKCR\\${Constants.WINDOWS_APP_ID} /v IconBackgroundColor /t REG_SZ /d ""','reg.exe add HKCR\\${Constants.WINDOWS_APP_ID} /v ShowInSettings /t REG_DWORD /d 1'
+                        `);
+                        shell.execCmd(`exit`)
+                        break;
                 }
                 ExtensionContext.setExtensionContext(context);        
             }
@@ -144,6 +154,12 @@ class SideBarProvider {
         return `
                 <button id="disableNotificationsButton" style="margin: 0 auto; margin-top: 10px; display: ${disableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Disable Notifications</button>
                 <button id="enableNotificationsButton" style="margin: 0 auto; margin-top: 10px; display: ${enableBtnVis}; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Enable Notifications</button>
+            `
+    }
+
+    _getSystemNotificationWindowsSetupButton() {
+        return `
+                <button id="setupNotificationsOnWindowsButton" style="margin: 0 auto; margin-top: 10px; display: block; color: white; background-color: #0074d9; border-radius: 4px; padding: 5px; width: 100%;">Setup Windows Notifications</button>
             `
     }
 
@@ -296,6 +312,10 @@ class SideBarProvider {
                             <option value="email" ${notificationMethod == 'email' ? 'selected' : ''}>Email</option>
                             <option value="sms" ${notificationMethod == 'sms' ? 'selected' : ''}>SMS</option>
                         </select>
+                        <div id="system-notifications-windows" class="system-notifications-windows-container" style="display: none;">
+                            <p>To show notifications without the SnoreToast title (and shortcut in Windows Start Menu), we need to add some registry keys to correctly register MeerkatIO. Using below button will set up these registry keys.</p>
+                            ${this._getSystemNotificationWindowsSetupButton()}
+                        </div>
                         <div id="teams-webhook" class="webhook-container" style="display: none;">
                             <label for="teams-webhook-url">Microsoft Teams Webhook URL:</label>
                             <input type="url" id="teams-webhook-url" class="webhook-input" placeholder="https://example.webhook.url" value="${microsoftWebhook}" />
@@ -364,7 +384,15 @@ class SideBarProvider {
                         });
                     } catch (e) {}
 
+                    try{
+                        document.getElementById('setupNotificationsOnWindowsButton').addEventListener('click', () => {
+                            // Send a message to the extension when the button is clicked
+                            vscode.postMessage('setupNotificationsOnWindows');
+                        });
+                    } catch (e) {}
+
                     const selectMenu = document.getElementById('meerkat-notification-select');
+                    const systemNotificationsWindowsContainer = document.getElementById('system-notifications-windows');
                     const teamsWebhookContainer = document.getElementById('teams-webhook');
                     const googleChatWebhookContainer = document.getElementById('google-chat-webhook');
                     const slackContainer = document.getElementById('slack-token');
@@ -413,6 +441,10 @@ class SideBarProvider {
 
                         if (selectMenu.value === 'system') {
                             vscode.postMessage('system:selected');
+
+                            if ('${os.platform()}' == 'win32') {
+                                systemNotificationsWindowsContainer.style.display = 'block';
+                            }
                         }
                     }
                     handleNotificationSelect();

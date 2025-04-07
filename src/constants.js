@@ -14,5 +14,8 @@ module.exports = {
     // Notification Data
     NOTIF_METHOD: "meerkatio_notification_method",
     NOTIF_HISTORY: "meerkatio_notification_history",
-    NOTIF_TRIGGER_DURATION_SECONDS: "meerkatio_notification_trigger_duration_seconds"
+    NOTIF_TRIGGER_DURATION_SECONDS: "meerkatio_notification_trigger_duration_seconds",
+
+    // Windows Specific
+    WINDOWS_APP_ID: 'com.meerkatio.vscode'
 }
