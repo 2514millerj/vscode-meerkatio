@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.12.0]
+
+- Improved System Notification handling for a variety of operating systems
+
 ## [1.11.3]
 
 - Bug fix for system notifications on Windows OS

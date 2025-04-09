@@ -96,6 +96,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.12.0
+
+Improved System Notification handling for a variety of operating systems
+
 ### 1.11.3
 
 Bug fix for system notifications on Windows OS
@@ -111,10 +115,5 @@ New Pro Feature: Summarize task output using the VS Code AI integration. Allows 
 ### 1.10.0
 
 Added VS Code Walkthrough steps with guides on configuring notification channels, trigger duration, and notification history tools. Improved notification configuration in the MeerkatIO sidebar menu.
-
-### 1.9.0
-
-New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.
-
 
 **Thank you for your support!**

@@ -445,6 +445,8 @@ class SideBarProvider {
                             if ('${os.platform()}' == 'win32') {
                                 systemNotificationsWindowsContainer.style.display = 'block';
                             }
+                        } else {
+                            systemNotificationsWindowsContainer.style.display = 'none';
                         }
                     }
                     handleNotificationSelect();
