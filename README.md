@@ -96,6 +96,10 @@ The MeerkatIO extension collects telemetry data to help build a better VS Code e
 
 ## Release Notes
 
+### 1.11.3
+
+Bug fix for system notifications on Windows OS
+
 ### 1.11.1
 
 Fix bug where Jupyter Notebook notifications were being triggered twice
@@ -111,10 +115,6 @@ Added VS Code Walkthrough steps with guides on configuring notification channels
 ### 1.9.0
 
 New Pro feature: MeerkatIO Notification History in the bottom panel allows users to search their history to see past notifications, and details about execution time.
-
-### 1.8.0
-
-Added Google Chat notifications integration. Improved sign in experience using VS Code authentication sessions with GitHub.
 
 
 **Thank you for your support!**

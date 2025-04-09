@@ -169,7 +169,8 @@ function handleMeerkatNotification(notification) {
 		nc.notify({
 			title: 'MeerkatIO Alert',
 			message: notification.message,
-			icon: extensionPath + "/images/logo-transparent.png"
+			icon: extensionPath + "/images/logo-transparent.png",
+			appID: "MeerkatIO"
 		}, function (err, response) {
 			if (err !== null) {
 				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);

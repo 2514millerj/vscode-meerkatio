@@ -2,6 +2,10 @@
 
 All notable changes to the "MeerkatIO" extension will be documented in this file.
 
+## [1.11.3]
+
+- Bug fix for system notifications on Windows OS
+
 ## [1.11.1]
 
 - Fix bug where Jupyter Notebook notifications were being triggered twice
