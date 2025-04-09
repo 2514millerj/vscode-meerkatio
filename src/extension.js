@@ -5,6 +5,7 @@ var player = require('play-sound')(opts = {});
 const notifier = require('node-notifier');
 const psList = require('ps-list');
 const moment = require('moment');
+const os = require('os');
 
 // Module Imports
 const SideBarProvider = require('./SideBarProvider');
@@ -13,7 +14,7 @@ const BottomPanelProvider = require('./BottomPanelProvider');
 let bottomPanelProvider = new BottomPanelProvider();
 
 const checkSurveyTrigger = require('./surveyPrompt');
-const wrapText = require('./utils');
+const { wrapText } = require('./utils');
 
 const NotificationHistory = require('./notificationHistory');
 const logNotificationHistory = NotificationHistory.logNotificationHistory;
@@ -23,9 +24,46 @@ const ExtensionContext = require('./extensionContext');
 const { meerkatAuthenticate, checkMeerkatAccount } = require('./authentication');
 const Constants = require('./constants');
 
+function nodeNotifierFactory(options = {})
+{
+	switch (os.platform()) {
+		case 'win32':
+			return new notifier.WindowsToaster({
+				...options
+			});
+		case 'darwin':
+			return new notifier.NotificationCenter({
+				...options
+			});
+		case 'linux':
+			return new notifier.NotifySend({
+				...options
+			});
+	}
+}
+
+function desktopNotifcationFactory(options = {})
+{
+	switch (os.platform()) {
+		case 'win32':
+			return {
+				...options,
+				appID: Constants.WINDOWS_APP_ID
+			};
+		case 'darwin':
+			return {
+				...options,
+			};
+		case 'linux':
+			return {
+				...options,
+			};
+	}
+}
+
 // Global Variables
 var extensionPath = "";
-const nc = new notifier.NotificationCenter();
+const nc = nodeNotifierFactory({});
 var activePIDs = [];
 
 function sleep(ms) {
@@ -166,12 +204,15 @@ function handleMeerkatNotification(notification) {
 		sendMeerkatLocal('ping', notification.duration, notification.trigger);
 	}
 	else if (meerkatioNotification === 'system') {
-		nc.notify({
-			title: 'MeerkatIO Alert',
-			message: notification.message,
-			icon: extensionPath + "/images/logo-transparent.png",
-			appID: "MeerkatIO"
-		}, function (err, response) {
+		nc.notify(
+			desktopNotifcationFactory(
+				{
+					title: 'MeerkatIO Alert',
+					message: notification.message,
+					icon: extensionPath + "/images/logo-transparent.png"
+				}
+			), 
+		function (err, response) {
 			if (err !== null) {
 				vscode.window.showErrorMessage(`MeerkatIO: Unable to display system notification, please check your permissions`);
 			}
